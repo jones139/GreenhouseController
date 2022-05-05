@@ -1,5 +1,6 @@
 #include <dhtnew.h>
 #include <BH1750.h>
+#include <SHT31.h>
 
 #ifndef LED_BUILTIN
 #define LED_BUILTIN 4
@@ -26,6 +27,7 @@ struct monitorDataStruct {
 
 // Global variables
 extern DHTNEW dhtSensor;
+extern SHT31 shtSensor;
 extern BH1750 lightMeter;
 extern struct monitorDataStruct monitorData;
 extern struct monitorDataStruct measArr[LOG_INTERVAL*60/MEAS_INTERVAL];

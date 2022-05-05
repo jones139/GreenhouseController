@@ -25,9 +25,10 @@
 
 #include "esp_camera.h"
 #include <WiFi.h>
-#include <dhtnew.h>
+//#include <dhtnew.h>
 #include <Wire.h>
 #include <BH1750.h>
+#include <SHT31.h>
 
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
@@ -44,9 +45,12 @@ void startCameraServer();
 #endif
 
 // Global variables
-DHTNEW dhtSensor(DHT_PIN);
+//DHTNEW dhtSensor(DHT_PIN);
 BH1750 lightMeter;
+SHT31 shtSensor;
+
 struct monitorDataStruct monitorData;
+//struct monitorDataStruct monitorData2;
 struct monitorDataStruct measArr[LOG_INTERVAL*60/MEAS_INTERVAL];
 struct monitorDataStruct histArr[HISTORY_LENGTH*24*60/LOG_INTERVAL];
 int measArrPosn = 0;
@@ -86,11 +90,12 @@ void TaskLogger(void *pvParameters)
 {
   (void) pvParameters;
   // DHT Sensor
-  dhtSensor.setDisableIRQ(1);
+  //dhtSensor.setDisableIRQ(1);
 
-  //BH1750 Light Sensor
+  //BH1750 Light Sensor and SHT31 Temp/Humitidy Sensors on I2C Bus
   Wire.begin(SCL_PIN, SDA_PIN);
   lightMeter.begin();
+  shtSensor.begin(&Wire);
 
  
   for (;;) // A Task shall never return or exit.
@@ -98,25 +103,34 @@ void TaskLogger(void *pvParameters)
     if (pauseLogging) {
       Serial.println("Logging Paused...");
     }
-    if ((millis() - dhtSensor.lastRead() > 2000) && !pauseLogging)
+    if (!pauseLogging)
     {
-      int retVal = dhtSensor.read();
-      monitorData.temp = dhtSensor.getTemperature();
-      monitorData.humidity = dhtSensor.getHumidity();
+      //int retVal1 = dhtSensor.read();
+      //monitorData2.temp = dhtSensor.getTemperature();
+      //monitorData2.humidity = dhtSensor.getHumidity();
+      monitorData.temp = shtSensor.getTemperature();
+      monitorData.humidity = shtSensor.getHumidity();
       monitorData.light = lightMeter.readLightLevel();
+      int retVal2 = shtSensor.read();
       Serial.print("retVal: ");
-      Serial.print(retVal);
+      //Serial.print(retVal1);
+      //Serial.print("/");
+      Serial.print(retVal2);
       Serial.print(", temp: ");
       Serial.print(monitorData.temp);
+      //Serial.print("/");
+      //Serial.print(monitorData2.temp);
       Serial.print(", humidity: ");
       Serial.print(monitorData.humidity);
+      //Serial.print("/");
+      //Serial.print(monitorData2.humidity);
       Serial.print("%, Light: ");
       Serial.print(monitorData.light);
       Serial.println(" lx");
 
       if (monitorData.temp == -999) {
         Serial.println("DHT Error - Resetting Device");
-        dhtSensor.reset();
+        //dhtSensor.reset();
         vTaskDelay(5000);   // Have a long wait after resetting to give things chance to calm down.
       }
   

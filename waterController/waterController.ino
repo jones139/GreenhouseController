@@ -22,7 +22,6 @@
 #include "waterController.h"
 #include <Arduino_FreeRTOS.h>
 #include <EEPROM.h>
-#include "arduino-timer.h"
 
 void TaskWaterController( void *pvParameters );
 void TaskCommandInterpreter( void *pvParameters );
@@ -31,7 +30,12 @@ int onSecs;
 int cycleSecs;
 int debug;
 
-auto timer = timer_create_default(); // create a timer with default settings
+
+void printString(int i) {
+  char buffer[125];
+  Serial.print(strcpy_P(buffer, (char *)pgm_read_word(&(string_table[i]))));
+}
+
 
 int parseCmd(String cmdLine, String *key,String *value) {
   int equalsPos;
@@ -69,6 +73,7 @@ void TaskCommandInterpreter(void *pvParameters)
     if(readString[readString.length()-1]=='\n') {
       Serial.println (readString);
       parseCmd(readString, &k,&v);
+      k.trim();
       if (debug) Serial.print("parseCmd k=");
       if (debug) Serial.print(k);
       if (debug) Serial.print(". v=");
@@ -78,40 +83,50 @@ void TaskCommandInterpreter(void *pvParameters)
       // If no value specified we return the parameter value
       //
       if (v=="") {
-	//Serial.println("v is empty");
-	if (k=="CYCLE_SECS\n") {
+	if (k=="CYCLE_SECS") {
 	  Serial.print("CYCLE_SECS=");
 	  Serial.println(cycleSecs);
-	} else if (k=="ON_SECS\n") {
+	} else if (k=="ON_SECS") {
 	  Serial.print("ON_SECS=");
 	  Serial.println(onSecs);
-	} else if (k=="DEBUG\n") {
+	} else if (k=="DEBUG") {
 	  Serial.print("DEBUG=");
 	  Serial.println(debug);
 	} else {
-	  Serial.print("ERROR - Unrecognised Parameter ");
+	  // Unrecognised Parameter
+	  printString(1);
 	  Serial.println(k);
 	}
       } else {
-	if (debug) Serial.println("V is not empty");
 	if (k=="CYCLE_SECS") {    
-	  Serial.print("Setting CYCLE_SECS=");
+	  //Serial.print("Setting CYCLE_SECS=");
+	  printString(2);
 	  Serial.println(v);
-	  if (v.toInt()>onSecs)
+	  if (v.toInt()>onSecs) {
 	    cycleSecs = v.toInt();
-	  else
-	    Serial.println("ERROR - must be greater than ON_SECS");
+	    EEPROM.put(EEPROM_CYCLE_ADDR, cycleSecs);
+	  }
+	  else {
+	    //Serial.println("ERROR - must be greater than ON_SECS");
+	    printString(3);
+	  }
 	} else if (k=="ON_SECS") { 
 	  Serial.print("Setting ON_SECS=");
 	  Serial.println(v);
-	  if (v.toInt()<cycleSecs)
+	  if (v.toInt()<cycleSecs) {
 	    onSecs = v.toInt();
-	  else
-	    Serial.println("ERROR  must be less than CYCLE_SECS");
+	    EEPROM.put(EEPROM_ON_ADDR, onSecs);
+	  }
+	  else {
+	    printString(5);
+	    Serial.println();
+	    //Serial.println("ERROR  must be less than CYCLE_SECS");
+	  }
 	} else if (k=="DEBUG") { 
 	  Serial.print("Setting DEBUG=");
 	  Serial.println(v);
 	  debug = v.toInt();
+	  EEPROM.put(EEPROM_DEBUG_ADDR, debug);
 	} else {
 	  Serial.print("Error - unrecognised parameter ");
 	  Serial.println(k);
@@ -132,10 +147,10 @@ void TaskWaterController(void *pvParameters)  // This is a task.
   //if (debug) Serial.println("TaskWaterController - starting loop");
   for (;;) // A Task shall never return or exit.
   {
-    if (debug) Serial.println("TaskWaterController - WATER ON");
+    //if (debug) Serial.println("TaskWaterController - WATER ON");
     digitalWrite(VALVE_PIN, HIGH);   
     vTaskDelay( onSecs*1000 / portTICK_PERIOD_MS ); // wait for one second
-    if (debug) Serial.println("TaskWaterController - WATER OFF");
+    //if (debug) Serial.println("TaskWaterController - WATER OFF");
     digitalWrite(VALVE_PIN, LOW);    // turn the LED off by making the voltage LOW
     vTaskDelay( (cycleSecs-onSecs)*1000 / portTICK_PERIOD_MS ); // wait for one second
   }

@@ -30,10 +30,26 @@ int onSecs;
 int cycleSecs;
 int debug;
 
+// A function at address zero is the same as resetting the microcontroller.
+void (*reset)(void) = 0; 
+
+/**
+ * getString(i, buffer)
+ * copy string number I into memory at address buffer.
+ * param int i - the index in string_table[] of the string to be retrieved.
+ * param char *buffer - the address of the memory area to store the string.
+ *  NOTE - NO checking is performed on the validity of the memory area buffer
+ *    - you must make sure there is enough space for the string!!
+ */
+void getString(int i, char *buffer) {
+  strcpy_P(buffer, (char *)pgm_read_word(&(string_table[i])));
+}
+
 
 void printString(int i) {
   char buffer[125];
-  Serial.print(strcpy_P(buffer, (char *)pgm_read_word(&(string_table[i]))));
+  getString(i, buffer);
+  Serial.print(buffer);
 }
 
 
@@ -55,7 +71,8 @@ void TaskCommandInterpreter(void *pvParameters)
 {
   String readString;
   String k,v;
-      readString = "";
+  char buffer[125];
+  readString = "";
 
   ////////////////////////////////////////////////
   // respond to commands from serial.
@@ -84,14 +101,21 @@ void TaskCommandInterpreter(void *pvParameters)
       //
       if (v=="") {
 	if (k=="CYCLE_SECS") {
-	  Serial.print("CYCLE_SECS=");
+	  getString(CYCLE_SECS_STR, buffer);
+	  Serial.print(buffer);
+	  Serial.print("=");
 	  Serial.println(cycleSecs);
 	} else if (k=="ON_SECS") {
-	  Serial.print("ON_SECS=");
+	  getString(ON_SECS_STR, buffer);
+	  Serial.print(buffer);
+	  Serial.print("=");
 	  Serial.println(onSecs);
 	} else if (k=="DEBUG") {
 	  Serial.print("DEBUG=");
 	  Serial.println(debug);
+	} else if (k=="RESET") {
+	  Serial.print("Resetting....");
+	  reset();
 	} else {
 	  // Unrecognised Parameter
 	  printString(1);
@@ -99,28 +123,29 @@ void TaskCommandInterpreter(void *pvParameters)
 	}
       } else {
 	if (k=="CYCLE_SECS") {    
-	  //Serial.print("Setting CYCLE_SECS=");
-	  printString(2);
+	  printString(SETTING_STR);
+	  printString(CYCLE_SECS_STR);
+	  Serial.print("=");
 	  Serial.println(v);
 	  if (v.toInt()>onSecs) {
 	    cycleSecs = v.toInt();
 	    EEPROM.put(EEPROM_CYCLE_ADDR, cycleSecs);
 	  }
 	  else {
-	    //Serial.println("ERROR - must be greater than ON_SECS");
-	    printString(3);
+	    printString(CYCLE_SECS_ERR_STR);
 	  }
 	} else if (k=="ON_SECS") { 
-	  Serial.print("Setting ON_SECS=");
+	  printString(SETTING_STR);
+	  printString(ON_SECS_STR);
+	  Serial.print("=");
 	  Serial.println(v);
 	  if (v.toInt()<cycleSecs) {
 	    onSecs = v.toInt();
 	    EEPROM.put(EEPROM_ON_ADDR, onSecs);
 	  }
 	  else {
-	    printString(5);
+	    printString(ON_SECS_ERR_STR);
 	    Serial.println();
-	    //Serial.println("ERROR  must be less than CYCLE_SECS");
 	  }
 	} else if (k=="DEBUG") { 
 	  Serial.print("Setting DEBUG=");
@@ -128,7 +153,7 @@ void TaskCommandInterpreter(void *pvParameters)
 	  debug = v.toInt();
 	  EEPROM.put(EEPROM_DEBUG_ADDR, debug);
 	} else {
-	  Serial.print("Error - unrecognised parameter ");
+	  printString(UNREC_PARAM_ERR_STR);
 	  Serial.println(k);
 	}
       }
@@ -147,12 +172,21 @@ void TaskWaterController(void *pvParameters)  // This is a task.
   //if (debug) Serial.println("TaskWaterController - starting loop");
   for (;;) // A Task shall never return or exit.
   {
-    //if (debug) Serial.println("TaskWaterController - WATER ON");
-    digitalWrite(VALVE_PIN, HIGH);   
-    vTaskDelay( onSecs*1000 / portTICK_PERIOD_MS ); // wait for one second
-    //if (debug) Serial.println("TaskWaterController - WATER OFF");
-    digitalWrite(VALVE_PIN, LOW);    // turn the LED off by making the voltage LOW
-    vTaskDelay( (cycleSecs-onSecs)*1000 / portTICK_PERIOD_MS ); // wait for one second
+    // Switch on the water at teh start of the cycle
+    if (debug) Serial.println("WATER ON");
+    digitalWrite(VALVE_PIN, HIGH);
+    // We only delay for 1 sec to avoid integer overflow on number of
+    // ticks to delay.
+    for (int i=0; i<onSecs; i++) {
+      vTaskDelay( 1000 / portTICK_PERIOD_MS );
+    }
+    if (debug) Serial.println("WATER OFF");
+    digitalWrite(VALVE_PIN, LOW);    
+    // Now wait for the rest of the cycle with the water off.
+    // Again we only delay for 1 sec to avoid integer overruns.
+    for (int i=0; i<(cycleSecs-onSecs); i++) {
+      vTaskDelay( 1000 / portTICK_PERIOD_MS );
+    }
   }
 }
 
@@ -179,10 +213,12 @@ void setup() {
   } else {
     Serial.println("Initialising from EEPROM stored values");
     EEPROM.get(EEPROM_ON_ADDR, onSecs);
-    Serial.print("onSecs=");
+    printString(ON_SECS_STR);
+    Serial.print("=");
     Serial.println(onSecs);
     EEPROM.get(EEPROM_CYCLE_ADDR, cycleSecs);
-    Serial.print("cycleSecs=");
+    printString(CYCLE_SECS_STR);
+    Serial.print("=");
     Serial.println(cycleSecs);
     if (cycleSecs<onSecs) cycleSecs=onSecs;
     EEPROM.get(EEPROM_DEBUG_ADDR, debug);
@@ -197,9 +233,9 @@ void setup() {
   xTaskCreate(
 	      TaskWaterController
 	      ,  "Water Controller"   // A name just for humans
-	      ,  128  // This stack size can be checked & adjusted by reading the Stack Highwater
+	      ,  128  // stack size
 	      ,  NULL
-	      ,  2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+	      ,  2  
 	      ,  NULL );
   
 
@@ -207,9 +243,9 @@ void setup() {
   xTaskCreate(
 	      TaskCommandInterpreter
 	      ,  "Command Interpreter"   // A name just for humans
-	      ,  128  // This stack size can be checked & adjusted by reading the Stack Highwater
+	      ,  256  // stack size
 	      ,  NULL
-	      ,  2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+	      ,  2  // Priority
 	      ,  NULL );
  
 }

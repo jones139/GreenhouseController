@@ -23,17 +23,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/fcntl.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "driver/uart.h"
+//#include "esp_vfs.h"
+//#include "esp_vfs_dev.h"
 #include "driver/gpio.h"
-
+#include "esp_spiffs.h"
 
 int onSecs = 1;
 int cycleSecs = 5;
-int debug = 1;
+int debug = 0;
 
 TaskHandle_t TaskHandle_xtask1;
 TaskHandle_t TaskHandle_xtask2;
@@ -43,6 +46,15 @@ TaskHandle_t TaskHandle_xtask2;
 #define STACK_SIZE_xtask1		4096
 #define STACK_SIZE_xtask2		4096
 
+
+/**
+ * parseCmd(cmdLine, *key, *value)
+ * parse string cmdLine and extract a key and value separated by '='
+ */
+void parseCmd(char* cmdLine, char **key, char **val) {
+  *key = strtok_r(cmdLine,"=", &cmdLine);
+  *val = strtok_r(NULL,"=", &cmdLine);
+}
 
 void TaskWaterController(void *pvParameters)  // This is a task.
 {
@@ -98,10 +110,9 @@ void TaskWaterController(void *pvParameters)  // This is a task.
 
 static void echo_task()
 {
-  char *lineStr;
-  char *token;
-  char *key;
-  //char *valStr;
+  char *key = NULL;
+  char *val = NULL;
+
   // Configure parameters of an UART driver,
   // communication pins and install the driver
   uart_config_t uart_config = {
@@ -116,26 +127,51 @@ static void echo_task()
   
   // Configure a temporary buffer for the incoming data
   uint8_t *data = (uint8_t *) malloc(BUF_SIZE);
+  char *lineBuf = (char *) malloc(BUF_SIZE);
+  char *lineBufStart = lineBuf;
+  int lineBufPosn = 0;
+
   
   while (1) {
     // Read data from the UART
     int len = uart_read_bytes(UART_NUM_0, data, BUF_SIZE, 20 / portTICK_RATE_MS);
-    // Write data back to the UART
-    //uart_write_bytes(UART_NUM_0, (const char *) data, len);
-
     if (len > 0) {
-      lineStr = (char *)data;
-      token = strtok_r(lineStr,"\n", &lineStr);
-      printf("Found newline - token=%s, lineStr=%s\n", token, lineStr);
-      while (token != NULL) {
-	printf("Found newline - token=%s, lineStr=%s\n", token, lineStr);
+      for (int i=0;i<len;i++) {
+	if (data[i] == 13) {  // end of line '\n' did not work
+	  lineBuf[lineBufPosn] = 0;
+	  parseCmd(lineBuf, &key, &val);
+	  if (key == NULL) {
+	    printf("No Tokens in String\n");
+	    fflush(stdout);
+	  } else {
+	    if (val == NULL) {
+	      printf("No value specified - key=%s\n", key);
+	      fflush(stdout);
+	    } else {
+	      printf("key=%s, val=%s, len(val)=%d\n", key,val, strlen(val));
+	    }
+	  }
+	  lineBuf = lineBufStart;
+	  lineBufPosn = 0;
+	} else {
+	  // echo the character back to the serial line
+	  printf("%c", data[i]);
+	  fflush(stdout);
+	  lineBuf[lineBufPosn] = data[i];
+	  lineBufPosn ++;
+	}
+      }
+      //printf("Found newline - token=%s, lineStr=%s\n", token, lineStr);
+      //while (token != NULL) {
+      //printf("Found newline - token=%s, lineStr=%s\n", token, lineStr);
 	//key = strtok_r(lineStr,"=",&lineStr);
 	//printf("key=%s\n",key);
 	//printf("valStr%s\n",lineStr);
 	  
-      }
+      //}
 	
     }
+    
   }
 }
 
@@ -178,7 +214,7 @@ void app_main()
 	      ,  2  
 	      ,  &TaskHandle_xtask2 );
   
-  while(1)
+  if (debug) while(1)
     {
       TickType_t xTime1 = xTaskGetTickCount();
       

@@ -35,6 +35,7 @@
 #include "esp_spiffs.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "cJSON.h"
 
 static const char *TAG = "waterControllerMain";
 
@@ -85,40 +86,14 @@ void initFileSys() {
     fflush(stdout);
   }
 
-  ESP_LOGI(TAG, "Opening file");
-  FILE* f = fopen("/spiffs/hello.txt", "w");
-  if (f == NULL) {
-    ESP_LOGE(TAG, "Failed to open file for writing");
-    return;
-  }
-  fprintf(f, "Hello World!\n");
-  fclose(f);
-  ESP_LOGI(TAG, "File written");
-
-  // Open file for reading
-  ESP_LOGI(TAG, "Reading file");
-  f = fopen("/spiffs/hello.txt", "r");
-  if (f == NULL) {
-    ESP_LOGE(TAG, "Failed to open file for reading");
-    return;
-  }
-  char line[64];
-  fgets(line, sizeof(line), f);
-  fclose(f);
-  // strip newline
-  char* pos = strchr(line, '\n');
-  if (pos) {
-    *pos = '\0';
-  }
-  ESP_LOGI(TAG, "Read from file: '%s'", line);
 }
 
 void saveSettings() {
   char settingsStr[SETTINGS_SIZE];
   snprintf(settingsStr,SETTINGS_SIZE,
-	   "{'debug':%d, 'CYCLE_SECS':%d, 'ON_SECS':%d}",
+	   "{\"DEBUG\":%d, \"CYCLE_SECS\":%d, \"ON_SECS\":%d}",
 	   debug, cycleSecs, onSecs);
-  printf("settingsStr=%s\n", settingsStr);
+  if (debug) printf("settingsStr=%s\n", settingsStr);
   ESP_LOGI(TAG, "Opening file");
   FILE* f = fopen(SETTINGS_FNAME, "w");
   if (f == NULL) {
@@ -131,12 +106,12 @@ void saveSettings() {
 }
 
 
-void loadSettings() {
+int loadSettings() {
   ESP_LOGI(TAG, "Reading file");
   FILE* f = fopen(SETTINGS_FNAME, "r");
   if (f == NULL) {
     ESP_LOGE(TAG, "Failed to open file for reading");
-    return;
+    return -1;
   }
   char line[64];
   fgets(line, sizeof(line), f);
@@ -148,6 +123,41 @@ void loadSettings() {
   }
   ESP_LOGI(TAG, "Read from file: '%s'", line);
 
+  int status=0;
+  cJSON *settingsJson = cJSON_Parse(line);
+  if (settingsJson == NULL)
+    {
+      const char *error_ptr = cJSON_GetErrorPtr();
+      if (error_ptr != NULL)
+        {
+	  fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+      status = 0;
+      cJSON_Delete(settingsJson);
+      return status;
+    }
+
+  cJSON *val = NULL;
+  val = cJSON_GetObjectItemCaseSensitive(settingsJson, "DEBUG");
+  debug = (int)val->valuedouble;
+  printf("DEBUG=%d\n", debug);
+  if (debug) {
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
+  } else {
+    esp_log_level_set("*", ESP_LOG_ERROR);
+  }
+
+
+  val = cJSON_GetObjectItemCaseSensitive(settingsJson, "CYCLE_SECS");
+  cycleSecs = (int)val->valuedouble;
+  printf("CYCLE_SECS=%d\n", cycleSecs);
+
+  val = cJSON_GetObjectItemCaseSensitive(settingsJson, "ON_SECS");
+  onSecs = (int)val->valuedouble;
+  printf("ON_SECS=%d\n", onSecs);
+
+  cJSON_Delete(settingsJson);
+  return status;
 }
 
 
@@ -216,6 +226,7 @@ static void echo_task()
 {
   char *key = NULL;
   char *val = NULL;
+  int valInt = 0;
 
   // Configure parameters of an UART driver,
   // communication pins and install the driver
@@ -242,17 +253,56 @@ static void echo_task()
     if (len > 0) {
       for (int i=0;i<len;i++) {
 	if (data[i] == 13) {  // end of line '\n' did not work
+	  printf("\n");
 	  lineBuf[lineBufPosn] = 0;
 	  parseCmd(lineBuf, &key, &val);
 	  if (key == NULL) {
-	    printf("No Tokens in String\n");
-	    fflush(stdout);
+	    if (debug) printf("No Tokens in String\n");
 	  } else {
 	    if (val == NULL) {
-	      printf("No value specified - key=%s\n", key);
-	      fflush(stdout);
+	      if (debug) printf("No value specified - key=%s\n", key);
+	      if (!strcmp(key, "DEBUG"))
+		printf("DEBUG=%d\n", debug);
+	      if (!strcmp(key, "ON_SECS"))
+		printf("ON_SECS=%d\n", onSecs);
+	      if (!strcmp(key, "CYCLE_SECS"))
+		printf("CYCLESECS=%d\n", cycleSecs);
+
 	    } else {
-	      printf("key=%s, val=%s, len(val)=%d\n", key,val, strlen(val));
+	      if (debug)
+		printf("key=%s, val=%s, len(val)=%d\n", key,val, strlen(val));
+	      sscanf(val,"%d", &valInt);
+	      if (debug) printf("valInt=%d\n", valInt);
+	      if (!strcmp(key, "DEBUG")) {
+		if (debug) printf("Setting Debug to %d\n", valInt);
+		debug=valInt;
+		printf("DEBUG=%d\n", debug);
+		if (debug) {
+		  esp_log_level_set("*", ESP_LOG_VERBOSE);
+		} else {
+		  esp_log_level_set("*", ESP_LOG_ERROR);
+		}
+
+
+	      } else if (!strcmp(key, "ON_SECS")) {
+		if (valInt<=cycleSecs) {
+		  onSecs=valInt;
+		  printf("ON_SECS=%d\n", onSecs);
+		}
+		else
+		  printf("ERROR - ON_SECS can not be greater than CYCLE_SECS\n");
+	      } else if (!strcmp(key, "CYCLE_SECS"))
+		if (valInt>=onSecs) {
+		  cycleSecs=valInt;
+		  printf("CYCLE_SECS=%d\n", cycleSecs);
+		}
+		else
+		  printf("ERROR - CYCLE_SECS can not be less than ON_SECS\n");
+	      else {
+		printf("Invalid key %s\n", key);
+		return;
+	      }
+	      saveSettings();
 	    }
 	  }
 	  lineBuf = lineBufStart;
@@ -265,17 +315,7 @@ static void echo_task()
 	  lineBufPosn ++;
 	}
       }
-      //printf("Found newline - token=%s, lineStr=%s\n", token, lineStr);
-      //while (token != NULL) {
-      //printf("Found newline - token=%s, lineStr=%s\n", token, lineStr);
-	//key = strtok_r(lineStr,"=",&lineStr);
-	//printf("key=%s\n",key);
-	//printf("valStr%s\n",lineStr);
-	  
-      //}
-	
     }
-    
   }
 }
 
@@ -306,9 +346,12 @@ float GetTaskHighWaterMarkPercent( TaskHandle_t task_handle,
 
 void app_main()
 {
+  // Initialise the SPIFFS file system and try to load
+  // stored settings from it - if that fails the default values will be used
   initFileSys();
-  saveSettings();
+  //saveSettings();   // Uncomment this line to force writing of defaults
   loadSettings();
+
   xTaskCreate(echo_task,
 	      "uart_echo_task", STACK_SIZE_xtask1,
 	      NULL, 10, &TaskHandle_xtask1);

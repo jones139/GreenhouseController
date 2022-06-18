@@ -1,5 +1,6 @@
-# Hello World Example
+# ESP8266 RTOS Version of water controller
 
-Starts a FreeRTOS task to print "Hello World"
+Runs on a Wemos D1 mini
 
-See the README.md file in the upper level 'examples' directory for more information about examples.
+make file partitions.csv
+In MenuConfig PartitionTable section, select custom CSV partition table

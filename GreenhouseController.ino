@@ -22,21 +22,32 @@
  */
 
 
+#include "credentials.h"
+#include "main.h"
 
-#include "esp_camera.h"
+
 #include <WiFi.h>
 //#include <dhtnew.h>
 #include <Wire.h>
 #include <BH1750.h>
 #include <SHT31.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+
+
+
+#ifdef USE_CAMERA
+#include "esp_camera.h"
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
-
-#include "credentials.h"
-#include "main.h"
-
 void startCameraServer();
+#endif
+
 
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
@@ -48,6 +59,8 @@ void startCameraServer();
 //DHTNEW dhtSensor(DHT_PIN);
 BH1750 lightMeter;
 SHT31 shtSensor;
+Adafruit_SSD1306 display;
+
 
 struct monitorDataStruct monitorData;
 //struct monitorDataStruct monitorData2;
@@ -96,7 +109,18 @@ void TaskLogger(void *pvParameters)
   Wire.begin(SCL_PIN, SDA_PIN);
   lightMeter.begin();
   shtSensor.begin(&Wire);
+  Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.setTextSize(2);             // Normal 1:1 pixel scale
+  display.dim(false);
+  display.setTextColor(WHITE);        // Draw white text
+  display.setCursor(0,0);             // Start at top-left corner
+  display.println(F("Sandie's Greenhouse Waterer!"));
+  display.display();
+  vTaskDelay(1000);
  
   for (;;) // A Task shall never return or exit.
   {
@@ -105,6 +129,7 @@ void TaskLogger(void *pvParameters)
     }
     if (!pauseLogging)
     {
+      
       //int retVal1 = dhtSensor.read();
       //monitorData2.temp = dhtSensor.getTemperature();
       //monitorData2.humidity = dhtSensor.getHumidity();
@@ -135,6 +160,25 @@ void TaskLogger(void *pvParameters)
       }
   
     }
+    display.clearDisplay();
+    display.setCursor(0,0);             // Start at top-left corner
+    //display.println(F("Hello, world!"));
+
+    display.print(monitorData.temp);
+    display.print(" C / ");
+    display.print(monitorData.humidity);
+    display.println(" %");
+    display.print(monitorData.light);
+    display.println(" lx");
+    if (WiFi.status() != WL_CONNECTED)
+      display.println("**** No WiFi ****");
+    else {
+      //display.print("http://");
+      display.println(WiFi.localIP());
+    }
+    display.display();
+
+    
     //Serial.println("TaskDummy1");
     vTaskDelay(1000);
  
@@ -163,14 +207,14 @@ void setup() {
   xTaskCreatePinnedToCore(
     TaskLogger
     ,  "TaskLogger"   // A name just for humans
-    ,  1024  // This stack size can be checked & adjusted by reading the Stack Highwater
+    ,  4096  // This stack size can be checked & adjusted by reading the Stack Highwater
     ,  NULL
     ,  2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
     ,  NULL 
     ,  ARDUINO_RUNNING_CORE);
 
 
-
+#ifdef USE_CAMERA
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -231,8 +275,9 @@ void setup() {
   s->set_vflip(s, 1);
   s->set_hmirror(s, 1);
 #endif
+#endif  //USE_CAMERA
 
-  WiFi.begin(ssid, password);
+ WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -241,9 +286,12 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected");
 
+#ifdef USE_CAMERA
   startCameraServer();
+  Serial.println("Camera Ready!");
+#endif
 
-  Serial.print("Camera Ready! Use 'http://");
+  Serial.print("Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
 

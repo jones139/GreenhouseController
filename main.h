@@ -1,14 +1,16 @@
+//#define USE_CAMERA 1
+
 #include <dhtnew.h>
 #include <BH1750.h>
 #include <SHT31.h>
 
 #ifndef LED_BUILTIN
-#define LED_BUILTIN 4
+#define LED_BUILTIN 2 //4
 #endif
 
 #define DHT_PIN 15
-#define SCL_PIN 12
-#define SDA_PIN 13
+#define SCL_PIN 22 // 12
+#define SDA_PIN 21 // 13
 #define WATER_PIN 14
 
 #define MEAS_INTERVAL 5  // Seconds between measurements.

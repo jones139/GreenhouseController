@@ -1,0 +1,31 @@
+body {
+    background-color: #202040;
+    color: white;
+}
+
+h1 {
+  color: white;
+  text-align: center;
+}
+
+
+p {
+  font-family: verdana;
+  font-size: 20px;
+}
+
+.warn {
+    background-color: yellow;
+    color: black;
+}
+
+.alarm {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+}
+
+#camImg {
+    width: 320;
+    height: 240;
+}

@@ -7,12 +7,14 @@
  *   - switching on and off of watering system at specified times.
  *   - monitoring of water flow rate.
  *   
- *   The following GPIO pins shoudl be connected.   Note that using these pins precludes the use of the SD card on the ESP32-CAM board, so do not try
+ *   The following GPIO pins should be connected.   Note that using these pins precludes the use of the SD card on the ESP32-CAM board, so do not try
  *    to use the SD card at the same time.
  *    - GPIO 12 : Input/Output: I2C SCL (for GY-302 light sensor module)
  *    - GPIO 13 : Input/Output: I2C SDA (for GY-302 light sensor module) 
- *    - GPIO 15 : Input/Output : DH22 Temperature/Humidity Sensor Data connector
- *    - GPIO 14 : Output : control watering.
+ *    - GPIO 15 : 
+ *    - GPIO 14 : 
+ *    - GPIO 1: Serial TX - to water controller microcontroller
+ *    - GPIO 3: Serial RX - to water controller microcontroller
  *    - GPIO  2 : Input : flow meter
  *    - GPIO  4 : Output : possible future plant food dosing control (but is also the on board camera flash LED)
  *    
@@ -70,6 +72,7 @@ int measArrPosn = 0;
 int histArrPosn = 0;
 bool pauseLogging = 0;
 
+struct waterControllerStruct  waterControllerData = {0, 3600, 34};
 
 // define two tasks for Blink & AnalogRead
 void TaskBlink( void *pvParameters );
@@ -291,6 +294,7 @@ void setup() {
   Serial.println("Camera Ready!");
 #endif
 
+  startSimpleServer();
   Serial.print("Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");

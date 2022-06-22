@@ -27,13 +27,24 @@ struct monitorDataStruct {
 };
 
 
+struct waterControllerStruct {
+  int debug;
+  int cycleSecs;
+  int onSecs;
+};
+
+
 // Global variables
 extern DHTNEW dhtSensor;
 extern SHT31 shtSensor;
 extern BH1750 lightMeter;
+extern struct waterControllerStruct waterControllerData;
 extern struct monitorDataStruct monitorData;
 extern struct monitorDataStruct measArr[LOG_INTERVAL*60/MEAS_INTERVAL];
 extern struct monitorDataStruct histArr[HISTORY_LENGTH*24*60/LOG_INTERVAL];
 extern int measArrPosn;
 extern int histArrPosn;
 extern bool pauseLogging;   // Flag to pause reading of sensors while we are doing camera operations to try to stop the DHT22 crashing.
+
+
+void startSimpleServer();

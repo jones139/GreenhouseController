@@ -7,9 +7,9 @@ import logging.handlers
 import bottle
 import WebControlClass
 import sbsCfg
-import sbsCtrl
+import greenhouseCtrl
 
-class SbsSvr(WebControlClass.WebControlClass):
+class GreenhouseSvr(WebControlClass.WebControlClass):
     mCtrl = None
     statusObj = {
         'lampOnOff' : 'Off',
@@ -17,7 +17,7 @@ class SbsSvr(WebControlClass.WebControlClass):
         }
 
     def __init__(self, configFname="sbscfg.json"):
-        print("SbsSvr.__init__(%s)" % configFname)
+        print("GreenhouseSvr.__init__(%s)" % configFname)
         self.cfg = sbsCfg.loadConfig(configFname)
 
         # Create Log file output folder
@@ -43,7 +43,7 @@ class SbsSvr(WebControlClass.WebControlClass):
         credStr = open(credFname,"r").read()
         self.mCred = json.loads(credStr.encode('utf-8'))
         print(self.mCred)
-        self.mCtrl = sbsCtrl.SbsCtrl(configFname)
+        self.mCtrl = greenhouseCtrl.GreenhouseCtrl(configFname)
         super().__init__('0.0.0.0',8080)
         self.logger.info("Web Server Started")
 
@@ -175,9 +175,9 @@ class SbsSvr(WebControlClass.WebControlClass):
 
     
 if (__name__ == "__main__"):
-    print("sbsSvr.__main__()")
+    print("greenhouseSvr.__main__()")
 
-    parser = argparse.ArgumentParser(description='SBS Control Server')
+    parser = argparse.ArgumentParser(description='Greenhouse Server')
     parser.add_argument('--config', default="sbscfg.json",
                         help='Configuration file name')
     #parser.add_argument('-n', '--nContours',
@@ -196,7 +196,7 @@ if (__name__ == "__main__"):
 
     configFname = args['config']
 
-    svr = SbsSvr(configFname)
+    svr = GreenhouseSvr(configFname)
     svr.startServer()
 
 

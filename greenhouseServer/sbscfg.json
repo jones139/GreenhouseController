@@ -1,0 +1,11 @@
+{
+    "logName": "monitorDaemon",
+    "logFolder": "/home/graham/greenhouseLogs",
+    "monitorFname": "/home/graham/greenhouseLogs/datalog.csv",
+    "logInterval": 300,
+    "waterControllerPort": "/dev/ttyUSB0",
+    "flowMtr": {
+	"dataPin": 10,
+	"flowFname": "/tmp/flows.csv"
+    }
+}

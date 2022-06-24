@@ -30,12 +30,11 @@ class _flowThread(threading.Thread):
         self.runThread = True
         self.count = 0
         self.flowEncPin = cfg['flowMtr']['dataPin']
-        self.pulsesPerLitre = cfg['flowMtr']['pulsesPerLitre']
         self.outFname = cfg['flowMtr']['flowFname']
         self.curTime = datetime.datetime.now()
         self.curFlow = -1
-        print("outFname=%s, flowEncPin=%d, pulsesPerLitre=%f" %
-              (self.outFname, self.flowEncPin, self.pulsesPerLitre))
+        print("outFname=%s, flowEncPin=%d" %
+              (self.outFname, self.flowEncPin))
 
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup([self.flowEncPin], GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -58,7 +57,7 @@ class _flowThread(threading.Thread):
             dt = time.time() - started
             if dt > self.rate_delay:
                 pulseRate = 1.0*self.count/dt  # pulses per second
-                rate = 60.* pulseRate/self.pulsesPerLitre  # l/min
+                rate = 60.* pulseRate  # l/min
                 tnow = datetime.datetime.now()
                 outFile = open(self.outFname,'w')
                 outFile.seek(0)  # go to start of file

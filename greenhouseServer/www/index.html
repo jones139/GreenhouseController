@@ -1,89 +1,34 @@
 <html>
   <head>
-    <title>S4-SBS</title>
+    <title>Greenhouse</title>
     <script src="/static/jquery-3.5.1.js"></script>
-    <script src="/static/sbs.js"></script>
+    <script src="/static/greenhouse.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/sbs.css">
   </head>
   <body>
     <table>
-      <tr><td><img src="/static/logo_200px.jpg" alt="LOGO"></img></td>
-	<td><h1>S4 SBS Monitoring and Control</h1></td><td></td>
+      <tr><td><img src="" alt="LOGO"></img></td>
+	<td><h1>Sandie's Greenhouse Monitor and Control</h1></td><td></td>
       </tr>
       </table>
     <span id="errorBox">errorBox</span>
     <span id="msgBox">msgBox</span>
     <table>
-      <tr><th>Lamp Status:</th><td id="lampStatusTxt">---</td><td id="lampPowerTxt">-- W</td><td><button id="lampOnOffBtn">Switch ON</button></td></tr>
-      <tr><th id="interlockLbl">Interlock Status:</th><td id="interlockTxt">---</td></tr>
-      <tr><th>Photodiode Reading:</th><td id="photodiodeTxt">---</td><td id="adcTxt">---</td></tr>
-      <tr><th id="coolingFlowLbl">CWFlow Rate:</th><td id="coolingFlowTxt">---</td><td id="flowStatus"></td></tr>
-      <tr><th>Temperatures</th><td id="tempStatus">---</td></tr>
       <tr>
-	<th id="temp1Lbl">Lamp Housing Inlet:</th><td id="temp1Txt">---</td>
-	<th id="temp2Lbl">Lamp Housing Surface:</th><td id="temp2Txt">---</td>
+	<th>Current Conditions:</th>
+	<td id="tempTxt">---</td>
+	<td id="humidityTxt">---</td>
+	<td id="lightTxt">---</td>
       </tr>
       <tr>
-	<th id="temp3Lbl">Lamp Housing Top:</th><td id="temp3Txt">---</td>
-	<th id="temp4Lbl">Lamp Housing Outlet:</th><td id="temp4Txt">---</td>
+	<th>Cycle Time / On Time (s):</th>
+	<td id="cycleSecsTxt">---</td>
+	<td id="onSecsTxt">---</td>
       </tr>
       <tr>
-	<th id="temp5Lbl">Lens Barrel 1:</th><td id="temp5Txt">---</td>
-	<th id="temp6Lbl">Lens Barrel 2:</th><td id="temp6Txt">---</td>
-      </tr>
-      <tr>
-	<th id="temp7Lbl">Lens Barrel 3:</th><td id="temp7Txt">---</td>
-	<th id="temp8Lbl">Lens Barrel 4:</th><td id="temp8Txt">---</td>
-      </tr>
-      <tr>
-	<th id="temp9Lbl">Aperture 1:</th><td id="temp9Txt">---</td>
-	<th id="temp10Lbl">Aperture 2:</th><td id="temp10Txt">---</td>
-      </tr>
-      <!--
-      <tr>
-	<th>K-Mirror Status:</th><td id="kMirrorStatusTxt">---</td>
-	<td><button id="kMirrorOnBtn">Start K-Mirror</button>
-	  <button id="kMirrorOffBtn">Stop K-Mirror</button></td>
-      </tr>
-      <tr>
-	<th>Move K-Mirror</th>
-	<td><input id="kMirrorMoveTxt"></td>
-	<td><button id="kMirrorMoveBtn">Move K-Mirror</button></td>
-      </tr>
-      <tr>
-	<td><button id="kMirrorShowSettingsBtn">K-Mirror Settings</button></td>
-      </tr>
-      -->
-      <tr>
-	<td><button id="rebootSbsBtn">Reboot SBS</button></td>
+	<td><button id="rebootSbsBtn">Reboot Controller</button></td>
       </tr>
     </table>
-    <!--<img id="camImg" src="/static/camImg.jpg" alt="image not found"></img>-->
-    <!--
-    <div id="kMirrorSettingsDiv">
-      <table>
-	<tr>
-	  <th>minPos</th>
-	  <td><input id="kMirrorMinPosTxt"></td>
-	</tr>
-	<tr>
-	  <th>maxPos</th>
-	  <td><input id="kMirrorMaxPosTxt"></td>
-	</tr>
-	<tr>
-	  <th>accel</th>
-	  <td><input id="kMirrorAccelTxt"></td>
-	</tr>
-	<tr>
-	  <th>speed</th>
-	  <td><input id="kMirrorSpeedTxt"></td>
-	</tr>
-	<tr>
-	  <td><button id="kMirrorSettingsSaveBtn">Save</button></td>
-	  <td><button id="kMirrorSettingsCancelBtn">Cancel</button></td>
-	</tr>
-	-->
-      </table>
     </div>
 
   </body>

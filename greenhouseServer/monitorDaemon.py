@@ -9,6 +9,7 @@ import smbus
 import sbsCfg
 import sht3x_main
 import bh1750
+import dbConn
 
 class _monitorThread(threading.Thread):
     LOG_INTERVAL = 10  # sec
@@ -36,6 +37,14 @@ class _monitorThread(threading.Thread):
 
         self.bus = smbus.SMBus(1)
         self.lightSensor = bh1750.BH1750(self.bus)
+
+        self.db = dbConn.DbCon(cfg['dbFname'])
+
+        edate = datetime.datetime.now()
+        sdate = edate - datetime.timedelta(days=1.0)
+        print (self.db.getData(sdate, edate))
+        print (self.db.getData(sdate, edate, retDf=True))
+
     
     def calcMeans(self,buf):
         tempSum = 0.
@@ -80,6 +89,10 @@ class _monitorThread(threading.Thread):
                     self.curTime.timestamp(),
                     meanTemp, meanHumidity, meanLight))
                 outFile.flush()
+                self.db.writeData(self.curTime,
+                                  meanTemp, -999,
+                                  meanHumidity,
+                                  meanLight)
                 lastLogTime = dt
                 self.dataBuffer = []
 

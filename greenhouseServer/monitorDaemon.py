@@ -9,6 +9,11 @@ import smbus
 import sbsCfg
 import sht3x_main
 import bh1750
+import dbConn
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # avoid warnings about GUIs and threads
+import matplotlib.pyplot as plt
 
 class _monitorThread(threading.Thread):
     LOG_INTERVAL = 10  # sec
@@ -25,9 +30,12 @@ class _monitorThread(threading.Thread):
         threading.Thread.__init__(self)
         self.DEBUG = debug
         self.runThread = True
-        self.outFname = cfg['monitorFname']
+        self.dataFolder = cfg['dataFolder']
+        self.outFname = os.path.join(cfg['dataFolder'],cfg['monitorFname'])
+        print("self.outFname=%s" % self.outFname)
         self.logInterval = cfg['logInterval']
-        print("_monitorThread._init__: outFname=%s" % self.outFname)
+        print("_monitorThread._init__: outFname=%s, log interval=%d s" % (self.outFname, self.logInterval))
+        self.dbPath = os.path.join(cfg['dataFolder'],cfg['dbFname'])
         self.curData = {}
         self.curTime = datetime.datetime.now()
 
@@ -36,6 +44,8 @@ class _monitorThread(threading.Thread):
 
         self.bus = smbus.SMBus(1)
         self.lightSensor = bh1750.BH1750(self.bus)
+
+
     
     def calcMeans(self,buf):
         tempSum = 0.
@@ -57,6 +67,7 @@ class _monitorThread(threading.Thread):
         devices and saves the result to  a file
         """
         print("monitorThread.run()")
+        self.db = dbConn.DbConn(self.dbPath)
         outFile = open(self.outFname,'a')
         data = {}
         lastLogTime = datetime.datetime.now()
@@ -74,12 +85,56 @@ class _monitorThread(threading.Thread):
             self.dataBuffer.append(data)
             if (dt.timestamp() - lastLogTime.timestamp())>=self.logInterval:
                 (meanTemp, meanHumidity, meanLight) = self.calcMeans(self.dataBuffer)
-                #outFile.seek(0)  # Return to start of file
+                print("Logging Data....")
+                # Write to simple csv file
                 outFile.write(dt.strftime("%Y-%m-%d %H:%M:%S"))
                 outFile.write(", %ld, %.1f, %.1f, %.1f\n" % (
                     self.curTime.timestamp(),
                     meanTemp, meanHumidity, meanLight))
                 outFile.flush()
+
+                # write to database
+                self.db.writeData(self.curTime,
+                                  meanTemp, -999,
+                                  meanHumidity,
+                                  meanLight)
+
+                # create plots for web interface
+                fig, ax = plt.subplots()
+                edate = datetime.datetime.now()
+                sdate = edate - datetime.timedelta(days=2.0)
+                df = self.db.getData(sdate, edate, retDf=True)
+                df['data_date'] = pd.to_datetime(df['data_date'])
+                df.plot(ax=ax, y='temp1', x='data_date')
+                df.plot(ax=ax, y='rh', x='data_date')
+                dateFormat = matplotlib.dates.DateFormatter("%H:%M")
+                ax.xaxis.set_major_formatter(dateFormat)
+                ax.set_ylabel("Temp (degC) / RH (%)")
+                ax.set_ylim((0,100))
+                ax.set_xlabel("Time (hh:mm)")
+                ax.grid(True)
+                ax.set_title("GreenHouse History (temperature)\n(to %s)"
+                             % (df['data_date'].iloc[-1].strftime("%d-%m-%y %H:%M")))
+                fig.savefig(os.path.join(self.dataFolder,"chart1.png"))
+                print("Figure saved to chart1.png");
+
+                # Light Chart
+                fig, ax = plt.subplots()
+                edate = datetime.datetime.now()
+                sdate = edate - datetime.timedelta(days=2.0)
+                df = self.db.getData(sdate, edate, retDf=True)
+                df['data_date'] = pd.to_datetime(df['data_date'])
+                df.plot(ax=ax, y='light', x='data_date')
+                dateFormat = matplotlib.dates.DateFormatter("%H:%M")
+                ax.xaxis.set_major_formatter(dateFormat)
+                ax.set_ylabel("Light Level (lux)")
+                ax.set_xlabel("Time (hh:mm)")
+                ax.grid(True)
+                ax.set_title("GreenHouse History (light level)\n(to %s)"
+                             % (df['data_date'].iloc[-1].strftime("%d-%m-%y %H:%M")))
+                fig.savefig(os.path.join(self.dataFolder,"chart2.png"))
+                print("Figure saved to chart2.png");
+
                 lastLogTime = dt
                 self.dataBuffer = []
 

@@ -1,7 +1,9 @@
 {
     "logName": "monitorDaemon",
     "logFolder": "/home/graham/greenhouseLogs",
-    "monitorFname": "/home/graham/GreenhouseController/greenhouseServer/www/data/datalog.csv",
+    "dataFolder": "/home/graham/GreenhouseController/greenhouseServer/www/data",
+    "monitorFname": "datalog.csv",
+    "dbFname": "greenhouse.db",
     "logInterval": 300,
     "waterControllerPort": "/dev/ttyUSB0",
     "flowMtr": {

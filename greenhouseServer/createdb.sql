@@ -1,0 +1,7 @@
+create table environment (
+       data_date datetime,
+       temp1 real,
+       temp2 real,
+       rh real,
+       light real);
+       

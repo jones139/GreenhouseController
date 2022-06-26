@@ -84,6 +84,7 @@ function populate_form(statusStr) {
 
     // Environment
     $("#tempTxt").html(statusObj.monitorData.data.temp.toFixed(1) +" degC");
+    $("#temp2Txt").html(statusObj.monitorData.data.temp2.toFixed(1) +" degC");
     $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
     $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
 

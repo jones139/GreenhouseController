@@ -9,5 +9,6 @@
     "flowMtr": {
 	"dataPin": 10,
 	"flowFname": "/tmp/flows.csv"
-    }
+    },
+    "temp2Dev": "28-0000044aca36"
 }

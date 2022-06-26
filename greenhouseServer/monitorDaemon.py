@@ -22,6 +22,7 @@ class _monitorThread(threading.Thread):
     curTime = None
     curData = {}
     dataBuffer = []
+    rootPath = '/sys/bus/w1/devices/'
     def __init__(self, cfg, debug = False):
         print("_monitorThread.__init__()")
         self.cfg = cfg
@@ -36,6 +37,7 @@ class _monitorThread(threading.Thread):
         self.logInterval = cfg['logInterval']
         print("_monitorThread._init__: outFname=%s, log interval=%d s" % (self.outFname, self.logInterval))
         self.dbPath = os.path.join(cfg['dataFolder'],cfg['dbFname'])
+        self.temp2Dev = cfg['temp2Dev']
         self.curData = {}
         self.curTime = datetime.datetime.now()
 
@@ -49,6 +51,7 @@ class _monitorThread(threading.Thread):
     
     def calcMeans(self,buf):
         tempSum = 0.
+        temp2Sum = 0.
         humSum = 0.
         lightSum = 0.
         count = 0
@@ -56,11 +59,43 @@ class _monitorThread(threading.Thread):
             tempSum += rec['temp']
             humSum += rec['humidity']
             lightSum += rec['light']
+            temp2Sum += rec['temp2']
             count += 1
         tempMean = tempSum / count
+        temp2Mean = temp2Sum / count
         humMean = humSum / count
         lightMean = lightSum / count
-        return(tempMean, humMean, lightMean)
+        return(tempMean, humMean, lightMean, temp2Mean)
+
+    def readDs18B20(self, id):
+        """ Attemptot read the value of the DS18B20 temperature device id 
+        off the 1-wire bus and return the temperature in degC.
+        Returns -300 if there is an error
+        """
+        try:
+            tempStr = ''
+            fpath = os.path.join(self.rootPath,id,"w1_slave")
+            if (self.DEBUG): print("fpath=%s" %fpath)
+            f = open(fpath,'r')
+            line = f.readline()
+            crc = line.rsplit(' ',1)
+            crc = crc[1].strip()
+            if (self.DEBUG): print("line=%s, crc=%s" % (line,crc))
+            if (crc=='YES'):
+                line = f.readline()
+                tempStr = line.rsplit('t=',1)[1]
+                if (self.DEBUG): print("line=%s, tempStr=%s" % (line, tempStr))
+            else:
+                tempStr = '-301000'
+            f.close
+            return(int(tempStr)/1000.)
+        except Exception as e:
+            self.logger.info("_tempThread.readDevice(%s) Exception" % id)
+            self.logger.info(e)
+            if (self.DEBUG): print("Exception running getTemp", e)
+            return -300.
+
+
         
     def run(self):
         """ The main loop of the thread  repeatedly scans all of the 
@@ -76,15 +111,17 @@ class _monitorThread(threading.Thread):
             tData, hData = sht3x_main.read()
             hum, temp = sht3x_main.calculation(tData,hData)
             light = self.lightSensor.measure_high_res()
+            temp2 = self.readDs18B20(self.temp2Dev)
             
             data['humidity'] = hum
             data['temp'] = temp
             data['light'] = light
+            data['temp2'] = temp2
             self.curTime = dt
             self.curData = data
             self.dataBuffer.append(data)
             if (dt.timestamp() - lastLogTime.timestamp())>=self.logInterval:
-                (meanTemp, meanHumidity, meanLight) = self.calcMeans(self.dataBuffer)
+                (meanTemp, meanHumidity, meanLight, meanTemp2) = self.calcMeans(self.dataBuffer)
                 print("Logging Data....")
                 # Write to simple csv file
                 outFile.write(dt.strftime("%Y-%m-%d %H:%M:%S"))
@@ -95,7 +132,7 @@ class _monitorThread(threading.Thread):
 
                 # write to database
                 self.db.writeData(self.curTime,
-                                  meanTemp, -999,
+                                  meanTemp, meanTemp2,
                                   meanHumidity,
                                   meanLight)
 
@@ -106,6 +143,7 @@ class _monitorThread(threading.Thread):
                 df = self.db.getData(sdate, edate, retDf=True)
                 df['data_date'] = pd.to_datetime(df['data_date'])
                 df.plot(ax=ax, y='temp1', x='data_date')
+                df.plot(ax=ax, y='temp2', x='data_date')
                 df.plot(ax=ax, y='rh', x='data_date')
                 dateFormat = matplotlib.dates.DateFormatter("%H:%M")
                 ax.xaxis.set_major_formatter(dateFormat)

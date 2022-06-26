@@ -35,9 +35,13 @@ kMirrorMove = function(){
 
 
 
-  function refresh(){
-      $("#chart").attr("src","/static/out.png?"+new Date().getTime());
+function refresh_data(){
       get_status()
+};
+
+function refresh_charts(){
+      $("#chart1").attr("src","/static/data/chart1.png?"+new Date().getTime());
+      $("#chart2").attr("src","/static/data/chart2.png?"+new Date().getTime());
 };
 
 function show_error(xhr, ajaxOptions, thrownError) {
@@ -99,7 +103,8 @@ $(document).ready(function(){
 
     configObj = null;
     getConfig();
-    setInterval("refresh();",1000);
+    setInterval("refresh_data();",1000);
+    setInterval("refresh_charts();",10*1000);
     get_status();
 
 });

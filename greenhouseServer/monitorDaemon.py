@@ -134,7 +134,7 @@ class _monitorThread(threading.Thread):
                                   meanHumidity,
                                   meanLight)
 
-                graphs.plotGraphs(self.dbPath, self.dataFolder, 2.0, False)
+                graphs.plotGraphs(self.dbPath, self.dataFolder, 2.0, 'H')
 
                 lastLogTime = dt
                 self.dataBuffer = []

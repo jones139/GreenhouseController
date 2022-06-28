@@ -6,6 +6,10 @@
     "dbFname": "greenhouse.db",
     "logInterval": 300,
     "waterControllerPort": "/dev/ttyUSB0",
+    "waterControlPin": 22,
+    "waterMonitorPin": 23,
+    "waterCycleSecs": 3600,
+    "waterOnSecs": 36,
     "flowMtr": {
 	"dataPin": 10,
 	"flowFname": "/tmp/flows.csv"

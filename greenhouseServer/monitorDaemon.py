@@ -10,10 +10,8 @@ import sbsCfg
 import sht3x_main
 import bh1750
 import dbConn
-import pandas as pd
-import matplotlib
-matplotlib.use('Agg')  # avoid warnings about GUIs and threads
-import matplotlib.pyplot as plt
+import graphs
+
 
 class _monitorThread(threading.Thread):
     LOG_INTERVAL = 10  # sec
@@ -136,42 +134,7 @@ class _monitorThread(threading.Thread):
                                   meanHumidity,
                                   meanLight)
 
-                # create plots for web interface
-                fig, ax = plt.subplots()
-                edate = datetime.datetime.now()
-                sdate = edate - datetime.timedelta(days=2.0)
-                df = self.db.getData(sdate, edate, retDf=True)
-                df['data_date'] = pd.to_datetime(df['data_date'])
-                df.plot(ax=ax, y='temp1', x='data_date')
-                df.plot(ax=ax, y='temp2', x='data_date')
-                df.plot(ax=ax, y='rh', x='data_date')
-                dateFormat = matplotlib.dates.DateFormatter("%H:%M")
-                ax.xaxis.set_major_formatter(dateFormat)
-                ax.set_ylabel("Temp (degC) / RH (%)")
-                ax.set_ylim((0,100))
-                ax.set_xlabel("Time (hh:mm)")
-                ax.grid(True)
-                ax.set_title("GreenHouse History (temperature)\n(to %s)"
-                             % (df['data_date'].iloc[-1].strftime("%d-%m-%y %H:%M")))
-                fig.savefig(os.path.join(self.dataFolder,"chart1.png"))
-                print("Figure saved to chart1.png");
-
-                # Light Chart
-                fig, ax = plt.subplots()
-                edate = datetime.datetime.now()
-                sdate = edate - datetime.timedelta(days=2.0)
-                df = self.db.getData(sdate, edate, retDf=True)
-                df['data_date'] = pd.to_datetime(df['data_date'])
-                df.plot(ax=ax, y='light', x='data_date')
-                dateFormat = matplotlib.dates.DateFormatter("%H:%M")
-                ax.xaxis.set_major_formatter(dateFormat)
-                ax.set_ylabel("Light Level (lux)")
-                ax.set_xlabel("Time (hh:mm)")
-                ax.grid(True)
-                ax.set_title("GreenHouse History (light level)\n(to %s)"
-                             % (df['data_date'].iloc[-1].strftime("%d-%m-%y %H:%M")))
-                fig.savefig(os.path.join(self.dataFolder,"chart2.png"))
-                print("Figure saved to chart2.png");
+                graphs.plotGraphs(self.dbPath, self.dataFolder, 2.0, False)
 
                 lastLogTime = dt
                 self.dataBuffer = []

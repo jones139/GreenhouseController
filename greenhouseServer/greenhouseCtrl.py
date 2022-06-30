@@ -30,7 +30,7 @@ class GreenhouseCtrl:
 
         
         self.waterCtrl = waterCtrl.WaterCtrlDaemon(self.cfg,debug=self.cfg['debug'])
-        self.waterCtrlDaemon.start()
+        self.waterCtrl.start()
         self.monitorDaemon = monitorDaemon.MonitorDaemon(self.cfg, debug=False)
         self.monitorDaemon.start()
         self.flowDaemon = flowDaemon.FlowDaemon(self.cfg, debug=False)
@@ -41,13 +41,14 @@ class GreenhouseCtrl:
         """ Shutdown the various daemon processes / threads nicely """
         self.monitorDaemon.stop()
         self.flowDaemon.stop()
-
+        self.waterCtrl.stop()
 
 
     def getStatus(self):
         ''' Populates the status object with the latest photodiode
         and temperature data, and returns the current status object '''
         self.statusObj['monitorData'] = self.monitorDaemon.getData()
+        self.statusObj['waterCtrl'] = self.waterCtrl.getStatus()
         #self.statusObj['flowRate'] = self.getCoolingFlow()['flow']
         return self.statusObj
 

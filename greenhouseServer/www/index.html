@@ -25,6 +25,7 @@
 	<th>Cycle Time / On Time (s):</th>
 	<td id="cycleSecsTxt">---</td>
 	<td id="onSecsTxt">---</td>
+	<td><button id="changeOnSecsBtn">Change</button></td>
       </tr>
       <tr>
 	<td colspan=4>
@@ -40,7 +41,18 @@
 	<td><button id="rebootSbsBtn">Reboot Controller</button></td>
       </tr>
     </table>
+    <div id="changeOnSecsDlg">
+      <p>
+	<label for="onSecsSpinner">Seconds of watering per hour:</label>
+	<input id="onSecsSpinner" name="onSecs">
+      </p>
+      
+      <p>
+	<button id="getvalue">Get value</button>
+	<button id="setDefault">Set to Default</button>
+      </p>
     </div>
 
+    
   </body>
 </html>

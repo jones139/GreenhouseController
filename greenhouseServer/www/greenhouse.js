@@ -92,6 +92,12 @@ function populate_form(statusStr) {
     $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
     $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
 
+
+    // Watering
+    $("#cycleSecsTxt").html(statusObj.waterCtrl.cycleSecs.toFixed(1) +" sec");
+    $("#onSecsTxt").html(statusObj.waterCtrl.onSecs.toFixed(1) +" sec");
+
+    
     $("#msgBox").html(statusObj.msg); // + JSON.stringify(configObj));
    
     //$("#camImg").attr("src","/static/camImg.jpg?" + new Date().getTime());

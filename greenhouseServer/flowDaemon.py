@@ -29,23 +29,26 @@ class _flowThread(threading.Thread):
         self.DEBUG = debug
         self.runThread = True
         self.count = 0
-        self.flowEncPin = cfg['flowMtr']['dataPin']
-        self.outFname = cfg['flowMtr']['flowFname']
+        self.flowEncPin = cfg['waterMonitorPin']
         self.curTime = datetime.datetime.now()
         self.curFlow = -1
-        print("outFname=%s, flowEncPin=%d" %
-              (self.outFname, self.flowEncPin))
+        print("flowEncPin=%d" %
+              (self.flowEncPin))
 
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.flowEncPin], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(self.flowEncPin, GPIO.FALLING,
-                              self.incrementCount)
+        GPIO.add_event_detect(self.flowEncPin, GPIO.BOTH,
+                              self.waterChangeDetect)
 
 
-    def incrementCount(self, pin):
-        ''' Interupt driven routine to increment pulse count.'''
+    def waterChangeDetect(self, pin):
+        ''' Interupt driven routine to detect changes in water state.'''
         if (pin == self.flowEncPin):
-            self.count += 1
+            if GPIO.input(self.flowEncPin):
+                print("WATER_ON_DETECTED")
+            else:
+                print("WATER_OFF_DETECTED")
+                
 
 
     def run(self):
@@ -54,22 +57,8 @@ class _flowThread(threading.Thread):
         """
         started = time.time()
         while self.runThread:
-            dt = time.time() - started
-            if dt > self.rate_delay:
-                pulseRate = 1.0*self.count/dt  # pulses per second
-                rate = 60.* pulseRate  # l/min
-                tnow = datetime.datetime.now()
-                outFile = open(self.outFname,'w')
-                outFile.seek(0)  # go to start of file
-                outFile.write(tnow.strftime("%Y-%m-%d %H:%M:%S"))
-                outFile.write(", %.3f\n" % rate)
-                outFile.flush()
-                if (self.DEBUG): print("Count = %d, Rate = %f" % (self.count,rate))
-                self.count = 0
-                started = time.time()
-                self.curTime = tnow
-                self.curFlow = rate
-            time.sleep(self.loop_delay)
+            #print(GPIO.input(self.flowEncPin))
+            time.sleep(self.rate_delay)
 
     def stop(self):
         """ Stop the background thread"""
@@ -135,5 +124,5 @@ class FlowDaemon():
 
 
 if (__name__ == "__main__"):    
-    print("starting thread")
-    daemon("sbscfg.json")
+    print("flowDaemon.main()")
+

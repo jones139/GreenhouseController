@@ -9,6 +9,7 @@ import time
 import datetime
 import threading
 import logging
+import RPi.GPIO as GPIO
 
 class _waterCtrlThread(threading.Thread):
     runDaemon = False
@@ -22,12 +23,16 @@ class _waterCtrlThread(threading.Thread):
         self.logger = logging.getLogger(self.cfg['logName'])
         self.onSecs = cfg['waterOnSecs']
         self.cycleSecs = cfg['waterCycleSecs']
+        self.waterControlPin = cfg['waterControlPin']
         self.logger.info("_waterCtrlThread.__init__(): onSecs=%f, cycleSecs=%f" % (self.onSecs, self.cycleSecs))
         threading.Thread.__init__(self)
         self.DEBUG = debug
         self.runThread = True
         self.curTime = datetime.datetime.now()
 
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup([self.waterControlPin], GPIO.OUT)
+        
     def run(self):
         """
         The main loop of the thread  repeatedly checks to see if it is time
@@ -40,7 +45,7 @@ class _waterCtrlThread(threading.Thread):
             self.cycleStartTime = datetime.datetime.now()
             self.waterOn()
             self.logger.info("_waterCtrlThread.run(): waterOn")
-            if (self.DEBUG): print("_waterCtrlThread.run(): waterOn")
+            #if (self.DEBUG): print("_waterCtrlThread.run(): waterOn")
             dt = datetime.datetime.now()
             # Wait for time to switch water off.
             while (dt - self.waterOnTime).total_seconds() < self.onSecs:
@@ -48,7 +53,7 @@ class _waterCtrlThread(threading.Thread):
                 dt = datetime.datetime.now()
             self.waterOff()
             self.logger.info("_waterCtrlThread.run(): waterOff")
-            if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
+            #if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
             while (dt - self.cycleStartTime).total_seconds() < self.cycleSecs:
                 time.sleep(0.1)
                 dt = datetime.datetime.now()
@@ -65,11 +70,13 @@ class _waterCtrlThread(threading.Thread):
     def waterOn(self):
         self.logger.info("_waterCtrlThread.waterOn()")
         if (self.DEBUG): print("_waterCtrlThread.waterOn()")
+        GPIO.output(self.waterControlPin, GPIO.HIGH)
         self.waterOnTime = datetime.datetime.now()
 
     def waterOff(self):
-        self.logger.info("_waterCtrlThread.waterOn()")
-        if (self.DEBUG): print("_waterCtrlThread.waterOn()")
+        self.logger.info("_waterCtrlThread.waterOff()")
+        if (self.DEBUG): print("_waterCtrlThread.waterOff()")
+        GPIO.output(self.waterControlPin, GPIO.LOW)
 
 class WaterCtrlDaemon():
     '''
@@ -104,6 +111,20 @@ class WaterCtrlDaemon():
         self.logger.info("WaterCtrlDaemon.stop()")
         self.waterCtrlThread.stop()
 
+    def setOnSecs(self, onSecs):
+        print("waterCtrlDaemon.setOnSecs(%f)" % onSecs)
+        self.logger.info("WaterCtrlDaemon.stop(%f)" % onSecs)
+        if (self.waterCtrlThread.cycleSecs >= onSecs):
+            self.waterCtrlThread.onSecs = onSecs
+        else:
+            print("waterCtrlDaemon.setOnSecs - ERROR - onSecs must not be more than cycleSecs")
+
+    def getStatus(self):
+        statusObj = {}
+        statusObj['onSecs'] = self.waterCtrlThread.onSecs
+        statusObj['cycleSecs'] = self.waterCtrlThread.cycleSecs
+        return statusObj
+        
 if __name__ == '__main__':
     print("waterCtrl.__main__()")
 

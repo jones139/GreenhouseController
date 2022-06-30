@@ -1,72 +1,123 @@
 #!/usr/bin/python3
 
 # Greenhouse water controller interface
-# Users serial interface to set watering cycle on the water controller
-# microcontroller.
+# Assumes water control valve is actuated by GPIO pin
+# cfg['waterControlPin']
 
-import serial
+import os
+import time
+import datetime
+import threading
 import logging
 
-class WaterCtrl:
-    comms = None
-    def __init__(self,cfg):
+class _waterCtrlThread(threading.Thread):
+    runDaemon = False
+    DEBUG = False
+    curTime = None
+    cycleStartTime = None
+    waterStartTime = None
+    def __init__(self, cfg, debug = False):
+        print("_waterCtrlThread.__init__()")
         self.cfg = cfg
         self.logger = logging.getLogger(self.cfg['logName'])
+        self.onSecs = cfg['waterOnSecs']
+        self.cycleSecs = cfg['waterCycleSecs']
+        self.logger.info("_waterCtrlThread.__init__(): onSecs=%f, cycleSecs=%f" % (self.onSecs, self.cycleSecs))
+        threading.Thread.__init__(self)
+        self.DEBUG = debug
+        self.runThread = True
+        self.curTime = datetime.datetime.now()
 
-        port = self.cfg['waterControllerPort']
-        print("WaterCtrl.__init__(%s)" % port)
-        self.logger.info("Initialising Water Controller on Port %s" % port)
-        try:
-            self.comms = serial.Serial(port,
-                                       baudrate=9600,
-                                       bytesize=8,
-                                       parity='N',
-                                       stopbits=1,
-                                       timeout=1)
-            print("Serial communications opened ok")
-        except serial.serialutil.SerialException as ex:
-            print("ERROR:  WaterCtrl.__init__: Failed to Open Communications to port %s" % port)
-            print(ex)
-            self.logger.error("Failed to Open Communications to Water Controller")
-            self.logger.error(ex)
-            #raise(ex)
-        r = self.sendCmdNoWait('DEBUG\r')
-        if (r == ''):
-            print('ERROR:\tWater Controller - connectivity failure - Returned \'%s\'' % r)
-            self.logger.error('ERROR:\tWater Controller - connectivity failure (check switch is ON on front panel) - Returned \'%s\'' % r)
-            #exit(-1)
-        #self.lampOff()
-
-
-    def setOnSecs(self,onSecs):
-        """ Set the number of seconds per period that the water will be on.
+    def run(self):
         """
-        self.logger.info("Setting ON_SECS to %d" % onSecs)
-        r = self.sendCmdNoWait('ONSECS=%d\r' % onSecs)
-        if (r == ''):
-            self.logger.error("Error setting ON_SECS")
-            print("LampCtrl.lampOff(): ERROR setting ON_SECS")
-            return(-1)
-        else:
-            print("LampCtrl.setOnSecs(): ok: %s" % r)
-            self.onSecs = onSecs
-            return(0)
+        The main loop of the thread  repeatedly checks to see if it is time
+        to switch the water on or off.
+        """
+        print("waterCtrlThread.run()")
 
-        
-    def close(self):
-        self.comms.close()
+        while self.runThread:
+            # Start cycle
+            self.cycleStartTime = datetime.datetime.now()
+            self.waterOn()
+            self.logger.info("_waterCtrlThread.run(): waterOn")
+            if (self.DEBUG): print("_waterCtrlThread.run(): waterOn")
+            dt = datetime.datetime.now()
+            # Wait for time to switch water off.
+            while (dt - self.waterOnTime).total_seconds() < self.onSecs:
+                time.sleep(0.1)
+                dt = datetime.datetime.now()
+            self.waterOff()
+            self.logger.info("_waterCtrlThread.run(): waterOff")
+            if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
+            while (dt - self.cycleStartTime).total_seconds() < self.cycleSecs:
+                time.sleep(0.1)
+                dt = datetime.datetime.now()
+            self.logger.info("_waterCtrlThread.run(): end of Cycle")
+            if (self.DEBUG): print("_waterCtrlThread.run(): end of Cycle")
+        print("waterCtrlThread.run() - Exiting")
+        self.waterOff()
 
-    def sendCmdNoWait(self, cmd):
-        try:
-            dump = self.comms.write((cmd+'\r').encode())
-            r = self.comms.readline().decode()
-            #print("sendCmdNoWait() - cmd=%s, ret=%s" % (cmd, r.strip()))
-            #print("sendCmdNoWait() - ret=%s" % (r.strip()))
-        except Exception as e:
-            print('ERROR executing %s' % (cmd))
-            self.logger.error('ERROR executing %s' % (cmd))
-            r=''
-        return r
+    def stop(self):
+        """ Stop the background thread"""
+        print("_waterCtrlThread.stop() - Stopping thread")
+        self.runThread = False
+
+    def waterOn(self):
+        self.logger.info("_waterCtrlThread.waterOn()")
+        if (self.DEBUG): print("_waterCtrlThread.waterOn()")
+        self.waterOnTime = datetime.datetime.now()
+
+    def waterOff(self):
+        self.logger.info("_waterCtrlThread.waterOn()")
+        if (self.DEBUG): print("_waterCtrlThread.waterOn()")
+
+class WaterCtrlDaemon():
+    '''
+    Start a thread that runs in the background
+    '''
+    DEBUG = False
+    waterCtrlThread = None
+
+    def __init__(self,cfgObj, debug=False):
+        '''
+        Initialise the class using data provided in object cfgObj
+        '''
+        print("waterCtrlDaemon.__init__()")
+        self.cfg = cfgObj
+        self.logger = logging.getLogger(self.cfg['logName'])
+        self.logger.info("WaterCtrlDaemon.__init__()")
+        self.waterCtrlThread = _waterCtrlThread(cfgObj, debug)
+        self.waterCtrlThread.daemon = True
 
 
+    def start(self):
+        ''' Start the background process
+        '''
+        print("waterCtrlDaemon.start()")
+        self.logger.info("WaterCtrlDaemon.start()")
+        self.waterCtrlThread.start()
 
+    def stop(self):
+        ''' Stop the background process
+        '''
+        print("waterCtrlDaemon.stop()")
+        self.logger.info("WaterCtrlDaemon.stop()")
+        self.waterCtrlThread.stop()
+
+if __name__ == '__main__':
+    print("waterCtrl.__main__()")
+
+    cfgObj = {
+        "logName": "waterCtrl",
+        "waterControlPin": 22,
+        "waterMonitorPin": 23,
+        "waterCycleSecs": 5,
+        "waterOnSecs": 2,
+        }
+
+    waterCtrl = WaterCtrlDaemon(cfgObj, debug=True)
+    waterCtrl.start()
+    time.sleep(20)
+    waterCtrl.stop()
+    time.sleep(10)
+    print("exiting")

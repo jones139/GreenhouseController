@@ -29,7 +29,8 @@ class GreenhouseCtrl:
         self.logger.info("GreenhouseCtrl.__init__()")
 
         
-        self.waterCtrl = waterCtrl.WaterCtrl(self.cfg)
+        self.waterCtrl = waterCtrl.WaterCtrlDaemon(self.cfg,debug=self.cfg['debug'])
+        self.waterCtrlDaemon.start()
         self.monitorDaemon = monitorDaemon.MonitorDaemon(self.cfg, debug=False)
         self.monitorDaemon.start()
         self.flowDaemon = flowDaemon.FlowDaemon(self.cfg, debug=False)

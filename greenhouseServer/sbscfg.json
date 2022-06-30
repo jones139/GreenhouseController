@@ -1,4 +1,5 @@
 {
+    "debug": true,
     "logName": "monitorDaemon",
     "logFolder": "/home/graham/greenhouseLogs",
     "dataFolder": "/home/graham/GreenhouseController/greenhouseServer/www/data",

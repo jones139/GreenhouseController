@@ -8,20 +8,20 @@ class DbConn:
     def __init__(self,dbFname):
         self.db = sqlite3.connect(dbFname)
 
-    def writeData(self,data_date,temp1, temp2, rh, light):
+    def writeMonitorData(self,data_date,temp1, temp2, rh, light,soil):
         # Note - triple quote for multi line string
         cur = self.db.cursor()
         cur.execute("""insert into 'environment'
-        ('data_date', 'temp1', 'temp2', 'rh', 'light')
-        values (?, ?, ?, ?, ?);""",
-                        (data_date, temp1, temp2, rh, light))
+        ('data_date', 'temp1', 'temp2', 'rh', 'light', 'soil')
+        values (?, ?, ?, ?, ?, ?);""",
+                        (data_date, temp1, temp2, rh, light, soil))
 
         self.db.commit()
 
         
-    def getData(self, sdate, edate, retDf=False):
+    def getMonitorData(self, sdate, edate, retDf=False):
         #print(sdate,type(sdate), edate, type(edate))
-        queryStr = """select data_date, temp1, temp2, rh, light from environment where data_date >= ? and data_date <= ?;"""
+        queryStr = """select data_date, temp1, temp2, rh, light, soil from environment where data_date >= ? and data_date <= ?;"""
         paramsTuple = (sdate, edate)
         if retDf:
             df = pd.read_sql (queryStr,
@@ -35,6 +35,35 @@ class DbConn:
             return cur.fetchall()
 
 
+    def writeWaterData(self,data_date,waterStatus):
+        # Note - triple quote for multi line string
+        cur = self.db.cursor()
+        cur.execute("""insert into 'water'
+        ('data_date', 'waterStatus')
+        values (?, ?);""",
+                        (data_date, waterStatus))
+
+        self.db.commit()
+
+        
+    def getWaterData(self, sdate, edate, retDf=False):
+        #print(sdate,type(sdate), edate, type(edate))
+        queryStr = """select data_date, waterStatus from water where data_date >= ? and data_date <= ?;"""
+        paramsTuple = (sdate, edate)
+        if retDf:
+            df = pd.read_sql (queryStr,
+                              self.db,
+                              params=paramsTuple)
+            return df
+        else:
+            cur = self.db.cursor()
+            cur.execute(queryStr,
+                        paramsTuple)
+            return cur.fetchall()
+
+
+
+        
     def importCsv(self, csvFname):
         infile = open(csvFname,"r")
         for lineStr in infile:
@@ -48,7 +77,7 @@ class DbConn:
             rh = float(linParts[3])
             light = float(linParts[4])
             print(dateStr, dataDate, temp1, rh, light)
-            self.writeData(dataDate, temp1, -999,rh,light)
+            self.writeMonitorData(dataDate, temp1, -999,rh,light,0)
 
     def close(self):
         self.db.close()
@@ -59,10 +88,10 @@ if __name__ == "__main__":
     db = DbConn("greenhouse.db")
     #db.writeData(datetime.datetime.now(), 23, 25,52,1234)
 
-    db.importCsv("datalog.csv")
+    #db.importCsv("datalog.csv")
     
     edate = datetime.datetime.now()
     sdate = edate - datetime.timedelta(days=1.0)
-    print (db.getData(sdate, edate))
-    print (db.getData(sdate, edate, retDf=True))
+    print (db.getMonitorData(sdate, edate))
+    print (db.getMonitorData(sdate, edate, retDf=True))
     db.close()

@@ -14,7 +14,7 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
     edate = datetime.datetime.now()
     sdate = edate - datetime.timedelta(days=timeSpanDays)
     db = dbConn.DbConn(dbPath)
-    df = db.getData(sdate, edate, retDf=True)
+    df = db.getMonitorData(sdate, edate, retDf=True)
     df['data_date'] = pd.to_datetime(df['data_date'])
     df.index=df['data_date']
 

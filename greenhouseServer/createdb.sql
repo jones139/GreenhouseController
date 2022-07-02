@@ -3,5 +3,9 @@ create table environment (
        temp1 real,
        temp2 real,
        rh real,
-       light real);
+       light real,
+       soil int);
+create table water (
+       data_date datetime,
+       waterStatus int);
        

@@ -40,16 +40,27 @@ class _flowThread(threading.Thread):
         GPIO.add_event_detect(self.flowEncPin, GPIO.BOTH,
                               self.waterChangeDetect)
 
+        if GPIO.input(self.flowEncPin):
+            print("WATER_ON_DETECTED")
+            self.waterStatus = 1
+        else:
+            print("WATER_OFF_DETECTED")
+            self.waterStatus = 0
+            
+
 
     def waterChangeDetect(self, pin):
         ''' Interupt driven routine to detect changes in water state.'''
         if (pin == self.flowEncPin):
             if GPIO.input(self.flowEncPin):
                 print("WATER_ON_DETECTED")
+                self.waterStatus = 1
             else:
                 print("WATER_OFF_DETECTED")
+                self.waterStatus = 0
                 
-
+    def getWaterStatus(self):
+        return self.waterStatus
 
     def run(self):
         """ Main loop of nhread - every time rate_delay seconds have
@@ -122,6 +133,9 @@ class FlowDaemon():
         retObj = self.flowThread.getFlow()
         return retObj
 
+    def getWaterStatus(self):
+        retObj = self.flowThread.getWaterStatus()
+        return retObj
 
 if (__name__ == "__main__"):    
     print("flowDaemon.main()")

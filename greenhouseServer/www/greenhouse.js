@@ -87,7 +87,7 @@ function populate_form(statusStr) {
 
 
     // Environment
-    $("#tempTxt").html(statusObj.monitorData.data.temp.toFixed(1) +" degC");
+    //$("#tempTxt").html(statusObj.monitorData.data.temp.toFixed(1) +" degC");
     $("#temp2Txt").html(statusObj.monitorData.data.temp2.toFixed(1) +" degC");
     $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
     $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
@@ -96,7 +96,11 @@ function populate_form(statusStr) {
     // Watering
     $("#cycleSecsTxt").html(statusObj.waterCtrl.cycleSecs.toFixed(1) +" sec");
     $("#onSecsTxt").html(statusObj.waterCtrl.onSecs.toFixed(1) +" sec");
-
+    if (statusObj.waterCtrl.waterStatus) {
+	$("#waterStatusTxt").html("**ON**");
+    } else {
+	$("#waterStatusTxt").html("OFF");
+    }
     
     $("#msgBox").html(statusObj.msg); // + JSON.stringify(configObj));
    

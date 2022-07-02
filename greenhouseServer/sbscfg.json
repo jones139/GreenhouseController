@@ -8,7 +8,8 @@
     "logInterval": 300,
     "waterControlPin": 22,
     "waterMonitorPin": 23,
-    "waterCycleSecs": 10,
-    "waterOnSecs": 2,
-    "temp2Dev": "28-0000044aca36"
+    "waterCycleSecs": 3600,
+    "waterOnSecs": 37,
+    "temp2Dev": "28-0000044aca36",
+    "soilProbePin": 5
 }

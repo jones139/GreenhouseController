@@ -49,7 +49,7 @@ class GreenhouseCtrl:
         and temperature data, and returns the current status object '''
         self.statusObj['monitorData'] = self.monitorDaemon.getData()
         self.statusObj['waterCtrl'] = self.waterCtrl.getStatus()
-        #self.statusObj['flowRate'] = self.getCoolingFlow()['flow']
+        self.statusObj['waterStatus'] = self.flowDaemon.getWaterStatus()
         return self.statusObj
 
 

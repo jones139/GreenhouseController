@@ -10,6 +10,7 @@ import datetime
 import threading
 import logging
 import RPi.GPIO as GPIO
+import dbConn
 
 class _waterCtrlThread(threading.Thread):
     runDaemon = False
@@ -17,6 +18,7 @@ class _waterCtrlThread(threading.Thread):
     curTime = None
     cycleStartTime = None
     waterStartTime = None
+    waterStatus=0
     def __init__(self, cfg, debug = False):
         print("_waterCtrlThread.__init__()")
         self.cfg = cfg
@@ -26,6 +28,8 @@ class _waterCtrlThread(threading.Thread):
         self.waterControlPin = cfg['waterControlPin']
         self.logger.info("_waterCtrlThread.__init__(): onSecs=%f, cycleSecs=%f" % (self.onSecs, self.cycleSecs))
         threading.Thread.__init__(self)
+        self.dbPath = os.path.join(cfg['dataFolder'],cfg['dbFname'])
+
         self.DEBUG = debug
         self.runThread = True
         self.curTime = datetime.datetime.now()
@@ -39,6 +43,7 @@ class _waterCtrlThread(threading.Thread):
         to switch the water on or off.
         """
         print("waterCtrlThread.run()")
+        self.db = dbConn.DbConn(self.dbPath)
 
         while self.runThread:
             # Start cycle
@@ -47,12 +52,14 @@ class _waterCtrlThread(threading.Thread):
             self.logger.info("_waterCtrlThread.run(): waterOn")
             #if (self.DEBUG): print("_waterCtrlThread.run(): waterOn")
             dt = datetime.datetime.now()
+            self.db.writeWaterData(dt, 1);
             # Wait for time to switch water off.
             while (dt - self.waterOnTime).total_seconds() < self.onSecs:
                 time.sleep(0.1)
                 dt = datetime.datetime.now()
             self.waterOff()
             self.logger.info("_waterCtrlThread.run(): waterOff")
+            self.db.writeWaterData(dt, 0);
             #if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
             while (dt - self.cycleStartTime).total_seconds() < self.cycleSecs:
                 time.sleep(0.1)
@@ -72,11 +79,13 @@ class _waterCtrlThread(threading.Thread):
         if (self.DEBUG): print("_waterCtrlThread.waterOn()")
         GPIO.output(self.waterControlPin, GPIO.HIGH)
         self.waterOnTime = datetime.datetime.now()
+        self.waterStatus=1
 
     def waterOff(self):
         self.logger.info("_waterCtrlThread.waterOff()")
         if (self.DEBUG): print("_waterCtrlThread.waterOff()")
         GPIO.output(self.waterControlPin, GPIO.LOW)
+        self.waterStatus=0
 
 class WaterCtrlDaemon():
     '''
@@ -123,6 +132,7 @@ class WaterCtrlDaemon():
         statusObj = {}
         statusObj['onSecs'] = self.waterCtrlThread.onSecs
         statusObj['cycleSecs'] = self.waterCtrlThread.cycleSecs
+        statusObj['waterStatus']=self.waterCtrlThread.waterStatus
         return statusObj
         
 if __name__ == '__main__':

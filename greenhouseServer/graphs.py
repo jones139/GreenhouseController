@@ -13,6 +13,8 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
     # create plots of hourly data for web interface
     edate = datetime.datetime.now()
     sdate = edate - datetime.timedelta(days=timeSpanDays)
+
+    # Monitoring Data
     db = dbConn.DbConn(dbPath)
     df = db.getMonitorData(sdate, edate, retDf=True)
     df['data_date'] = pd.to_datetime(df['data_date'])
@@ -33,6 +35,24 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
                    os.path.join(dataFolder,"chart2.png")
                    )
 
+    plotSoilGraph(df,
+                   "GreenHouse History (Soil Moisture Alarm)\n(to %s)"
+                   % (df.index[-1].strftime("%d-%m-%y %H:%M")),
+                   os.path.join(dataFolder,"chart3.png")
+                   )
+
+    # Watering Data
+    df = db.getWaterData(sdate, edate, retDf=True)
+    df['data_date'] = pd.to_datetime(df['data_date'])
+    df.index=df['data_date']
+
+    plotWaterGraph(df,
+                   "GreenHouse History (Water Status)\n(to %s)"
+                   % (df.index[-1].strftime("%d-%m-%y %H:%M")),
+                   os.path.join(dataFolder,"chart4.png")
+                   )
+
+    
 def plotTempRhGraph(df, titleStr, outFname):
     fig, ax = plt.subplots()
     df.plot(ax=ax, y='temp2')#, x='data_date')
@@ -60,4 +80,34 @@ def plotLightGraph(df, titleStr, outFname):
     ax.set_title(titleStr)
     fig.savefig(outFname)
     print("Figure saved to %s" % outFname);
-    
+
+def plotSoilGraph(df, titleStr, outFname):
+    # Soil Moisture Chart
+    fig, ax = plt.subplots()
+    df.plot(ax=ax, y='soil')#, x='data_date')
+    dateFormat = matplotlib.dates.DateFormatter("%H:%M")
+    ax.xaxis.set_major_formatter(dateFormat)
+    ax.set_ylabel("Soil Moisture Alarm LEvel")
+    ax.set_xlabel("Time (hh:mm)")
+    ax.grid(True)
+    ax.set_title(titleStr)
+    fig.savefig(outFname)
+    print("Figure saved to %s" % outFname);
+
+def plotWaterGraph(df, titleStr, outFname):
+    # Watering Status Chart
+    fig, ax = plt.subplots()
+    df.plot(ax=ax, y='waterStatus')#, x='data_date')
+    dateFormat = matplotlib.dates.DateFormatter("%H:%M")
+    ax.xaxis.set_major_formatter(dateFormat)
+    ax.set_ylabel("Watering Status")
+    ax.set_xlabel("Time (hh:mm)")
+    ax.grid(True)
+    ax.set_title(titleStr)
+    fig.savefig(outFname)
+    print("Figure saved to %s" % outFname);
+
+
+if __name__ == "__main__":
+    print("graphs.py.__main__")
+    plotGraphs(os.path.join("/home/graham/GreenhouseController/greenhouseServer/www/data","greenhouse.db"), "/home/graham/GreenhouseController/greenhouseServer/www/data", 2.0, 'H')

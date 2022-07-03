@@ -42,6 +42,9 @@ function refresh_data(){
 function refresh_charts(){
       $("#chart1").attr("src","/static/data/chart1.png?"+new Date().getTime());
       $("#chart2").attr("src","/static/data/chart2.png?"+new Date().getTime());
+      $("#chart3").attr("src","/static/data/chart3.png?"+new Date().getTime());
+      $("#chart4").attr("src","/static/data/chart4.png?"+new Date().getTime());
+
 };
 
 function show_error(xhr, ajaxOptions, thrownError) {

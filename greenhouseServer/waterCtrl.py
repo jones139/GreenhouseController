@@ -48,18 +48,25 @@ class _waterCtrlThread(threading.Thread):
         while self.runThread:
             # Start cycle
             self.cycleStartTime = datetime.datetime.now()
+            # Write current watering status to db before we change anything.
+            dt = datetime.datetime.now()
+            self.db.writeWaterData(dt, self.waterStatus);
             self.waterOn()
             self.logger.info("_waterCtrlThread.run(): waterOn")
             #if (self.DEBUG): print("_waterCtrlThread.run(): waterOn")
             dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, 1);
+            self.db.writeWaterData(dt, self.waterStatus);
             # Wait for time to switch water off.
             while (dt - self.waterOnTime).total_seconds() < self.onSecs:
                 time.sleep(0.1)
                 dt = datetime.datetime.now()
+            dt = datetime.datetime.now()
+            self.db.writeWaterData(dt, self.waterStatus);
             self.waterOff()
+            dt = datetime.datetime.now()
+            self.db.writeWaterData(dt, self.waterStatus);
             self.logger.info("_waterCtrlThread.run(): waterOff")
-            self.db.writeWaterData(dt, 0);
+            #self.db.writeWaterData(dt, 0);
             #if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
             while (dt - self.cycleStartTime).total_seconds() < self.cycleSecs:
                 time.sleep(0.1)

@@ -1,4 +1,5 @@
 credentials.h
 *~
 build
-
+__pycache__
+www/data

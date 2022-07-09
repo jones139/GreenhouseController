@@ -6,6 +6,7 @@ import threading
 import logging
 import smbus
 import RPi.GPIO as GPIO
+import Adafruit_ADS1x15
 
 import sbsCfg
 import sht3x_main
@@ -39,7 +40,7 @@ class _monitorThread(threading.Thread):
         self.temp2Dev = cfg['temp2Dev']
         self.curData = {}
         self.curTime = datetime.datetime.now()
-        self.soilProbePin = cfg['soilProbePin']
+        #self.soilProbePin = cfg['soilProbePin']
 
         if (sht3x_main.init()):
             print("Initialised sht3x sensor");
@@ -47,9 +48,12 @@ class _monitorThread(threading.Thread):
         self.bus = smbus.SMBus(1)
         self.lightSensor = bh1750.BH1750(self.bus)
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup([self.soilProbePin], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        self.soilMoistureLevel = GPIO.input(self.soilProbePin)
+        #GPIO.setmode(GPIO.BCM)
+        #GPIO.setup([self.soilProbePin], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        #self.soilMoistureLevel = GPIO.input(self.soilProbePin)
+
+        self.adc = Adafruit_ADS1x15.ADS1115()
+        #self.soilMoistureLevel = adc.read_adc(0,1)
 
     
     def calcMeans(self,buf):
@@ -118,7 +122,8 @@ class _monitorThread(threading.Thread):
             hum, temp = sht3x_main.calculation(tData,hData)
             light = self.lightSensor.measure_high_res()
             temp2 = self.readDs18B20(self.temp2Dev)
-            soilMoisture = GPIO.input(self.soilProbePin)
+            #soilMoisture = GPIO.input(self.soilProbePin)
+            soilMoisture = self.adc.read_adc(0,1)
             
             data['humidity'] = hum
             data['temp'] = temp

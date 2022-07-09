@@ -17,6 +17,7 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
     # Monitoring Data
     db = dbConn.DbConn(dbPath)
     df = db.getMonitorData(sdate, edate, retDf=True)
+
     df['data_date'] = pd.to_datetime(df['data_date'])
     df.index=df['data_date']
 
@@ -36,7 +37,7 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
                    )
 
     plotSoilGraph(df,
-                   "GreenHouse History (Soil Moisture Alarm)\n(to %s)"
+                   "GreenHouse History (Soil Resistance)\n(to %s)"
                    % (df.index[-1].strftime("%d-%m-%y %H:%M")),
                    os.path.join(dataFolder,"chart3.png")
                    )
@@ -52,6 +53,9 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
                    os.path.join(dataFolder,"chart4.png")
                    )
 
+    db.close()
+    del df
+    
     
 def plotTempRhGraph(df, titleStr, outFname):
     fig, ax = plt.subplots()
@@ -87,7 +91,8 @@ def plotSoilGraph(df, titleStr, outFname):
     df.plot(ax=ax, y='soil')#, x='data_date')
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
-    ax.set_ylabel("Soil Moisture Alarm LEvel")
+    ax.set_ylabel("Soil Resistance (adc counts)")
+    ax.set_ylim(10000,15000)
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)

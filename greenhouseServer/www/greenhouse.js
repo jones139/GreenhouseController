@@ -94,6 +94,7 @@ function populate_form(statusStr) {
     $("#temp2Txt").html(statusObj.monitorData.data.temp2.toFixed(1) +" degC");
     $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
     $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
+    $("#soilTxt").html(statusObj.monitorData.data.soil.toFixed(0) +" counts");
 
 
     // Watering

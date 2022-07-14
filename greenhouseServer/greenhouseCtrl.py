@@ -52,12 +52,14 @@ class GreenhouseCtrl:
         self.statusObj['waterStatus'] = self.flowDaemon.getWaterStatus()
         return self.statusObj
 
-
     def getConfig(self):
         ''' Return the current confinguration object.
         '''
         return self.cfg
 
+    def setOnSecs(self, onSecs):
+        return self.waterCtrl.setOnSecs(onSecs)
+    
         
 if __name__ == "__main__":
     print("greenhouseCtrl.__main__()")

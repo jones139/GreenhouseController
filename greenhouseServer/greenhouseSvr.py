@@ -84,67 +84,13 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
             retVal=self.getConfig()
         if (cmdStr=="rebootSbs"):
             retVal=self.rebootSbs()
-        if (cmdStr=="lampOnOff"):
-            retVal=self.lampOnOff()
-        if (cmdStr=="lampOn"):
-            retVal = self.mCtrl.setLamp(True)
-        if (cmdStr=="lampOff"):
-            retVal = self.mCtrl.setLamp(False)
-        if (cmdStr=="kMirrorStatus"):
-            print("kMirrorStatus")
-            #retVal=self.mCtrl.km.getStatus()
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorSettings"):
-            print("kMirrorSettings")
-            #retVal=self.mCtrl.km.getSettings()
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorHome"):
-            print("kMirrorHome")
-            #retVal=self.mCtrl.km.home()
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorStart"):
-            print("kMirrorStart")
-            #retVal=self.mCtrl.km.start()
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorStop"):
-            print("kMirrorStop")
-            #retVal=self.mCtrl.km.stop()
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorMoveTo"):
-            print("kMirrorMoveTo - %s." % valStr)
-            #retVal=self.mCtrl.km.moveTo(int(valStr))
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorSetCMin"):
-            #retVal=self.mCtrl.km.setCMin(int(valStr))
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorSetCMax"):
-            #retVal=self.mCtrl.km.setCMax(int(valStr))
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorSetSpeed"):
-            #retVal=self.mCtrl.km.setSpeed(int(valStr))
-            retVal="k-mirror not implemented"
-        if (cmdStr=="kMirrorSetAcc"):
-            #retVal=self.mCtrl.km.setAcc(int(valStr))
-            retVal="k-mirror not implemented"
-        if (cmdStr=="setGain"):
-            retVal=self.mCtrl.setGain(int(valStr))
+        if (cmdStr=="onSecs"):
+            retVal=self.self.greenhouseCtrl.setOnSecs(int(valStr))
         print("SbsSvr.onWwwCmd(%s/%s %s): returning %s" % (cmdStr,valStr,methodStr,retVal))
         return(retVal)
 
     def getStatus(self):
         statusObj = self.mCtrl.getStatus()
-        #kmStatusObj = self.mCtrl.km.getStatus()
-        #if kmStatusObj is not None:
-        #    statusObj['kMirror'] = {
-        #        'running': int(kmStatusObj['running']),
-        #        'curpos': int(kmStatusObj['curpos'])
-        #    }
-        #else:
-        #    statusObj['kMirror'] = {
-        #        'running': -1,
-        #        'curpos': -1
-        #    }
-            
         return json.dumps(statusObj)
 
     def getConfig(self):

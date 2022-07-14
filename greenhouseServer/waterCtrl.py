@@ -23,12 +23,24 @@ class _waterCtrlThread(threading.Thread):
         print("_waterCtrlThread.__init__()")
         self.cfg = cfg
         self.logger = logging.getLogger(self.cfg['logName'])
-        self.onSecs = cfg['waterOnSecs']
-        self.cycleSecs = cfg['waterCycleSecs']
         self.waterControlPin = cfg['waterControlPin']
-        self.logger.info("_waterCtrlThread.__init__(): onSecs=%f, cycleSecs=%f" % (self.onSecs, self.cycleSecs))
         threading.Thread.__init__(self)
         self.dbPath = os.path.join(cfg['dataFolder'],cfg['dbFname'])
+
+        # Initialise settings from database, or config file if DB values not set
+        self.db = dbConn.DbConn(self.dbPath)
+        dbOnSecs, dbCycleSecs = self.db.getWaterControlVals()
+        self.db.close()
+        if (dbOnSecs is None):
+            self.onSecs = cfg['waterOnSecs']
+        else:
+            self.onSecs = dbOnSecs
+        if (dbCycleSecs is None):
+            self.cycleSecs = cfg['waterCycleSecs']
+        else:
+            self.cycleSecs = dbCycleSecs
+
+        self.logger.info("_waterCtrlThread.__init__(): onSecs=%f, cycleSecs=%f" % (self.onSecs, self.cycleSecs))
 
         self.DEBUG = debug
         self.runThread = True
@@ -43,6 +55,7 @@ class _waterCtrlThread(threading.Thread):
         to switch the water on or off.
         """
         print("waterCtrlThread.run()")
+        # re-open db for this thread.
         self.db = dbConn.DbConn(self.dbPath)
 
         while self.runThread:
@@ -50,23 +63,22 @@ class _waterCtrlThread(threading.Thread):
             self.cycleStartTime = datetime.datetime.now()
             # Write current watering status to db before we change anything.
             dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus);
+            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs);
             self.waterOn()
             self.logger.info("_waterCtrlThread.run(): waterOn")
             #if (self.DEBUG): print("_waterCtrlThread.run(): waterOn")
             dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus);
+            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs);
             # Wait for time to switch water off.
             while (dt - self.waterOnTime).total_seconds() < self.onSecs:
                 time.sleep(0.1)
                 dt = datetime.datetime.now()
             dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus);
+            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs);
             self.waterOff()
             dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus);
+            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs);
             self.logger.info("_waterCtrlThread.run(): waterOff")
-            #self.db.writeWaterData(dt, 0);
             #if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
             while (dt - self.cycleStartTime).total_seconds() < self.cycleSecs:
                 time.sleep(0.1)
@@ -132,8 +144,12 @@ class WaterCtrlDaemon():
         self.logger.info("WaterCtrlDaemon.stop(%f)" % onSecs)
         if (self.waterCtrlThread.cycleSecs >= onSecs):
             self.waterCtrlThread.onSecs = onSecs
+            #dt = datetime.datetime.now()
+            #self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs);
+            return("OK")
         else:
             print("waterCtrlDaemon.setOnSecs - ERROR - onSecs must not be more than cycleSecs")
+            return("ERROR")
 
     def getStatus(self):
         statusObj = {}

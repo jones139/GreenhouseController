@@ -113,7 +113,7 @@ class _monitorThread(threading.Thread):
         """
         print("monitorThread.run()")
         self.db = dbConn.DbConn(self.dbPath)
-        outFile = open(self.outFname,'a')
+        #outFile = open(self.outFname,'a')
         data = {}
         lastLogTime = datetime.datetime.now()
         while self.runThread:
@@ -137,11 +137,11 @@ class _monitorThread(threading.Thread):
                 (meanTemp, meanHumidity, meanLight, meanTemp2, meanSoil) = self.calcMeans(self.dataBuffer)
                 print("Logging Data....")
                 # Write to simple csv file
-                outFile.write(dt.strftime("%Y-%m-%d %H:%M:%S"))
-                outFile.write(", %ld, %.1f, %.1f, %.1f\n" % (
-                    self.curTime.timestamp(),
-                    meanTemp, meanHumidity, meanLight))
-                outFile.flush()
+                #outFile.write(dt.strftime("%Y-%m-%d %H:%M:%S"))
+                #outFile.write(", %ld, %.1f, %.1f, %.1f\n" % (
+                #    self.curTime.timestamp(),
+                #    meanTemp, meanHumidity, meanLight))
+                #outFile.flush()
 
                 # write to database
                 self.db.writeMonitorData(self.curTime,
@@ -149,7 +149,7 @@ class _monitorThread(threading.Thread):
                                   meanHumidity,
                                   meanLight, meanSoil)
 
-                graphs.plotGraphs(self.dbPath, self.dataFolder, 2.0, 'H')
+                #graphs.plotGraphs(self.dbPath, self.dataFolder, 2.0, 'H')
 
                 lastLogTime = dt
                 self.dataBuffer = []
@@ -158,7 +158,7 @@ class _monitorThread(threading.Thread):
             self.logger.debug(self.curData)
             #time.sleep(0.01)
             time.sleep(1.0)
-        outFile.close()
+        #outFile.close()
         print("monitorThread.run() - Exiting")
 
     def stop(self):

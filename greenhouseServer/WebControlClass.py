@@ -60,7 +60,7 @@ class WebControlClass:
             #print("WebControlClass.cmd(%s, %s)" % (cmdStr,valStr))
             return self.onWwwCmd(cmdStr, valStr,bottle.request.method, bottle.request)
 
-        bottle.run(app,host=self.host, port=self.portNo)
+        bottle.run(app,host=self.host, port=self.portNo)#, server='paste')
 
     def onWwwCmd(self,cmdStr,valStr, methodStr,request):
         ''' Process the command, with parameter 'valStr' using request

@@ -7,5 +7,7 @@ create table environment (
        soil int);
 create table water (
        data_date datetime,
-       waterStatus int);
+       waterStatus int,
+       onTime int,
+       cycleTime int);
        

@@ -1,7 +1,7 @@
 {
     "debug": true,
-    "logName": "monitorDaemon",
-    "logFolder": "/home/graham/greenhouseLogs",
+    "logName": "greenhouseSvr",
+    "logFolder": "/home/graham/GreenhouseController/greenhouseServer/www/data",
     "dataFolder": "/home/graham/GreenhouseController/greenhouseServer/www/data",
     "monitorFname": "datalog.csv",
     "dbFname": "greenhouse.db",
@@ -9,7 +9,7 @@
     "waterControlPin": 22,
     "waterMonitorPin": 23,
     "waterCycleSecs": 3600,
-    "waterOnSecs": 37,
+    "waterOnSecs": 40,
     "temp2Dev": "28-0000044aca36",
     "soilProbePin": 5
 }

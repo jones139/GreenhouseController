@@ -35,7 +35,7 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(module)s.%(funcName)s[%(lineno)s] - %(message)s')
         fh.setFormatter(formatter)
         self.logger.addHandler(fh)
-        self.logger.info("Initialising SBS Server")
+        self.logger.info("Initialising Water Controller Server")
 
 
         credFname = os.path.join(os.path.dirname(os.path.realpath(__file__)),"credentials.json")
@@ -75,6 +75,7 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
         #    print("NOT AUTHENTICATED")
             #return bottle.Response("403Unauthorised",403,{'WWW-Authenticate':'Basic realm="User"'})
 
+        self.logger.info("onWwwCmd: cmdStr=%s, valStr=%s, methodStr=%s" % (cmdStr,valStr,methodStr))
         print("onWwwCmd: cmdStr=%s, valStr=%s, methodStr=%s" % (cmdStr,valStr,methodStr))
         retVal = "onWwwCmd - ERROR, command not recognised"
         if (cmdStr=="status"):

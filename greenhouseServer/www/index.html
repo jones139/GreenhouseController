@@ -13,9 +13,15 @@
       </table>
     <span id="errorBox">errorBox</span>
     <span id="msgBox">msgBox</span>
-    <table>
+    <table border=1>
       <tr>
-	<th>Current Conditions:</th>
+	<th rowspan=2>Current Conditions:</th>
+	<th>Temp</th>
+	<th>RH</th>
+	<th>Light</th>
+	<th>Soil Resistance (condy)</th>
+      </tr>
+      <tr>
 	<!--<td id="tempTxt">---</td>-->
 	<td id="temp2Txt">---</td>
 	<td id="humidityTxt">---</td>
@@ -23,11 +29,29 @@
 	<td id="soilTxt">---</td>
       </tr>
       <tr>
-	<th>Cycle Time / On Time (s):</th>
+	<th rowspan=2>Controller Status:</th>
+	<th>Soil Condy</th>
+	<th>Set Point Condy</th>
+	<th>Control Val</th>
+	<th>PID Gains</th>
+      </tr>
+      <tr>
+	<td id="condyTxt">---</td>
+	<td id="setpointTxt">---</td>
+	<td id="controlValTxt">---</td>
+	<td id="PIDTxt">---</td>
+      </tr>
+      <tr>
+	<th rowspan=2>Watering Status</th>
+	<th>Cycle Time (s)</th>
+	<th>On Time (s)</th>
+	<th>Water Status</th>
+	<td rowspan=2><button id="changeOnSecsBtn">Change</button></td>
+      </tr>
+      <tr>
 	<td id="cycleSecsTxt">---</td>
 	<td id="onSecsTxt">---</td>
 	<td id="waterStatusTxt">---</td>
-	<td><button id="changeOnSecsBtn">Change</button></td>
       </tr>
       <tr>
 	<td colspan=4>

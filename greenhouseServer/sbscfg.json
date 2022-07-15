@@ -10,6 +10,11 @@
     "waterMonitorPin": 23,
     "waterCycleSecs": 3600,
     "waterOnSecs": 40,
+    "Kp": 10,
+    "Ki": 1,
+    "Kd": 0,
+    "opMode": "Auto",
+    "setPoint": 91,
     "temp2Dev": "28-0000044aca36",
     "soilProbePin": 5
 }

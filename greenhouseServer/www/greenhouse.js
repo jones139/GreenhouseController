@@ -94,8 +94,18 @@ function populate_form(statusStr) {
     $("#temp2Txt").html(statusObj.monitorData.data.temp2.toFixed(1) +" degC");
     $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
     $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
-    $("#soilTxt").html(statusObj.monitorData.data.soil.toFixed(0) +" counts");
+    $("#soilTxt").html(statusObj.monitorData.data.soil.toFixed(0) +" counts (" +
+		       (1e6*1.0/statusObj.monitorData.data.soil).toFixed(1) + " uC)");
 
+    // Controller
+    $("#condyTxt").html(statusObj.waterCtrl.soilCond.toFixed(1) +" uC");
+    $("#setpointTxt").html(statusObj.waterCtrl.setPoint.toFixed(1) +" uC");
+    $("#controlValTxt").html(statusObj.waterCtrl.controlVal.toFixed(1)+" sec");
+    $("#PIDTxt").html("("
+		      +statusObj.waterCtrl.Kp.toFixed(1)+", "
+		      +statusObj.waterCtrl.Ki.toFixed(1)+", "
+		      +statusObj.waterCtrl.Kd.toFixed(1)+")"
+		     );
 
     // Watering
     $("#cycleSecsTxt").html(statusObj.waterCtrl.cycleSecs.toFixed(1) +" sec");

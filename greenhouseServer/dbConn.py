@@ -34,14 +34,20 @@ class DbConn:
                         paramsTuple)
             return cur.fetchall()
 
+    def getLatestMonitorData(self):
+        queryStr = """select data_date, temp1, temp2, rh, light, soil from environment order by rowid desc limit 1;"""
+        cur = self.db.cursor()
+        cur.execute(queryStr)
+        return cur.fetchone()
 
-    def writeWaterData(self,data_date,waterStatus, onTime, cycleTime):
+        
+    def writeWaterData(self,data_date,waterStatus, onTime, cycleTime, controlVal):
         # Note - triple quote for multi line string
         cur = self.db.cursor()
         cur.execute("""insert into 'water'
-        ('data_date', 'waterStatus', 'onTime', 'cycleTime')
-        values (?, ?, ?, ?);""",
-                        (data_date, waterStatus, onTime, cycleTime))
+        ('data_date', 'waterStatus', 'onTime', 'cycleTime','controlVal')
+        values (?, ?, ?, ?,?);""",
+                        (data_date, waterStatus, onTime, cycleTime, controlVal))
 
         self.db.commit()
 

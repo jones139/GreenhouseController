@@ -75,8 +75,6 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
         #    print("NOT AUTHENTICATED")
             #return bottle.Response("403Unauthorised",403,{'WWW-Authenticate':'Basic realm="User"'})
 
-        self.logger.info("onWwwCmd: cmdStr=%s, valStr=%s, methodStr=%s" % (cmdStr,valStr,methodStr))
-        print("onWwwCmd: cmdStr=%s, valStr=%s, methodStr=%s" % (cmdStr,valStr,methodStr))
         retVal = "onWwwCmd - ERROR, command not recognised"
         if (cmdStr=="status"):
             retVal=self.getStatus()
@@ -86,7 +84,7 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
             retVal=self.rebootSbs()
         if (cmdStr=="onSecs"):
             retVal=self.self.greenhouseCtrl.setOnSecs(int(valStr))
-        print("SbsSvr.onWwwCmd(%s/%s %s): returning %s" % (cmdStr,valStr,methodStr,retVal))
+        self.logger.info("SbsSvr.onWwwCmd(%s/%s %s): returning %s" % (cmdStr,valStr,methodStr,retVal))
         return(retVal)
 
     def getStatus(self):

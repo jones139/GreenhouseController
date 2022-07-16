@@ -54,7 +54,7 @@ class DbConn:
         
     def getWaterData(self, sdate, edate, retDf=False):
         #print(sdate,type(sdate), edate, type(edate))
-        queryStr = """select data_date, waterStatus from water where data_date >= ? and data_date <= ?;"""
+        queryStr = """select data_date, waterStatus, onTime from water where data_date >= ? and data_date <= ?;"""
         paramsTuple = (sdate, edate)
         if retDf:
             df = pd.read_sql (queryStr,

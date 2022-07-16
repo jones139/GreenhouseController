@@ -36,8 +36,9 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
                    os.path.join(dataFolder,"chart2.png")
                    )
 
+    df['condy'] = 1e6 * 1.0 / df['soil']
     plotSoilGraph(df,
-                   "GreenHouse History (Soil Resistance)\n(to %s)"
+                   "GreenHouse History (Soil Conductivity)\n(to %s)"
                    % (df.index[-1].strftime("%d-%m-%y %H:%M")),
                    os.path.join(dataFolder,"chart3.png")
                    )
@@ -88,11 +89,11 @@ def plotLightGraph(df, titleStr, outFname):
 def plotSoilGraph(df, titleStr, outFname):
     # Soil Moisture Chart
     fig, ax = plt.subplots()
-    df.plot(ax=ax, y='soil')#, x='data_date')
+    df.plot(ax=ax, y='condy')#, x='data_date')
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
-    ax.set_ylabel("Soil Resistance (adc counts)")
-    ax.set_ylim(10000,15000)
+    ax.set_ylabel("Soil Conductivity (micro counts)")
+    ax.set_ylim(60,150)
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)
@@ -102,10 +103,10 @@ def plotSoilGraph(df, titleStr, outFname):
 def plotWaterGraph(df, titleStr, outFname):
     # Watering Status Chart
     fig, ax = plt.subplots()
-    df.plot(ax=ax, y='waterStatus')#, x='data_date')
+    df.plot(ax=ax, y='onTime')#, x='data_date')
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
-    ax.set_ylabel("Watering Status")
+    ax.set_ylabel("Watering Time (sec per hour)")
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)

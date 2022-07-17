@@ -93,7 +93,7 @@ def plotSoilGraph(df, titleStr, outFname):
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
     ax.set_ylabel("Soil Conductivity (micro counts)")
-    ax.set_ylim(60,150)
+    ax.set_ylim(50,200)
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)

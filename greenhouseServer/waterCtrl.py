@@ -86,12 +86,14 @@ class _waterCtrlThread(threading.Thread):
         while self.runThread:
             # Start cycle
             self.cycleStartTime = datetime.datetime.now()
+            self.db = dbConn.DbConn(self.dbPath)
             envData = self.db.getLatestMonitorData()
+            self.db.close()
             self.soilRes = envData[5]
             self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
             self.controlVal = self.pid(self.soilCond)
             self.onSecs = self.controlVal
-            self.logger.info("soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
+            self.logger.info("Cycle_Start: soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
                   (self.soilRes, self.soilCond, self.setPoint, self.controlVal))
             # Write current watering status to db before we change anything.
             self.writeWaterData()
@@ -105,7 +107,9 @@ class _waterCtrlThread(threading.Thread):
             self.writeWaterData()
             self.waterOff()
             self.logger.info("waterOff")
-            #if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
+
+            # Wait for end of cycle
+            dt = datetime.datetime.now()
             while (dt - self.cycleStartTime).total_seconds() < self.cycleSecs:
                 time.sleep(0.1)
                 dt = datetime.datetime.now()

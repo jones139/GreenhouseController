@@ -41,13 +41,14 @@ class DbConn:
         return cur.fetchone()
 
         
-    def writeWaterData(self,data_date,waterStatus, onTime, cycleTime, controlVal):
+    def writeWaterData(self,data_date,waterStatus, onTime, cycleTime, controlVal,setpoint,Kp,Ki,Kd):
         # Note - triple quote for multi line string
         cur = self.db.cursor()
         cur.execute("""insert into 'water'
-        ('data_date', 'waterStatus', 'onTime', 'cycleTime','controlVal')
-        values (?, ?, ?, ?,?);""",
-                        (data_date, waterStatus, onTime, cycleTime, controlVal))
+        ('data_date', 'waterStatus', 'onTime', 'cycleTime','controlVal','setpoint','Kp','Ki','Kd')
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+                        (data_date, waterStatus, onTime, cycleTime, controlVal,
+                         setpoint, Kp, Ki, Kd))
 
         self.db.commit()
 
@@ -68,9 +69,9 @@ class DbConn:
             return cur.fetchall()
 
     def getWaterControlVals(self):
-        ''' returns tupe (onSecs, cycleSecs) which is the current control parameters.
+        ''' returns tuple (setpoint, Kp, Ki, Kd, cycleTime, controlVal) which is the current control parameters.
 '''
-        queryStr = """select onTime, cycleTime from water order by rowid desc limit 1;"""
+        queryStr = """select setpoint, Kp, Ki, Kd, cycleTime, controlVal from water order by rowid desc limit 1;"""
         cur = self.db.cursor()
         cur.execute(queryStr)
         return cur.fetchone()

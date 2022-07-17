@@ -66,8 +66,8 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
         method methodStr, and return the appropriate response.
         request is the bottlepy request associated with the command
         '''
-        if (request.auth is None):
-            print("Authentication Data not Provided")
+        #if (request.auth is None):
+            #print("Authentication Data not Provided")
             #return bottle.Response("Provide Credentials",401,{'WWW-Authenticate':'Basic realm="User"'})
             #return bottle.HTTPResponse(status=401, body="Authentication Data not PRovided")
             #bottle.abort(401,"Access Denied")
@@ -83,7 +83,15 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
         if (cmdStr=="rebootSbs"):
             retVal=self.rebootSbs()
         if (cmdStr=="onSecs"):
-            retVal=self.self.greenhouseCtrl.setOnSecs(int(valStr))
+            retVal=self.mCtrl.setOnSecs(int(valStr))
+        if (cmdStr=="setpoint"):
+            retVal=self.mCtrl.setSetpoint(float(valStr))
+        if (cmdStr=="Kp"):
+            retVal=self.mCtrl.setKp(float(valStr))
+        if (cmdStr=="Ki"):
+            retVal=self.mCtrl.setKi(float(valStr))
+        if (cmdStr=="Kd"):
+            retVal=self.mCtrl.setKd(float(valStr))
         self.logger.info("SbsSvr.onWwwCmd(%s/%s %s): returning %s" % (cmdStr,valStr,methodStr,retVal))
         return(retVal)
 

@@ -77,16 +77,28 @@
 	<td><button id="rebootSbsBtn">Reboot Controller</button></td>
       </tr>
     </table>
-    <div id="changeOnSecsDlg">
+    <div id="changeSetpointDlg">
       <p>
-	<label for="onSecsSpinner">Seconds of watering per hour:</label>
-	<input id="onSecsSpinner" name="onSecs">
+	<label for="setpointInput">Conductivity Setpoint (uC):</label>
+	<input id="setpointInput" name="setpoint">
+	<button id="changeSetpointBtn">Change</button>
+      </p>
+      <p>
+	<label for="KpInput">Proportional Gain (Kp):</label>
+	<input id="KpInput" name="Kp">
+	<button id="changeKpBtn">Change</button>
+      </p>
+      <p>
+	<label for="KiInput">Integral Gain (Ki):</label>
+	<input id="KiInput" name="Ki">
+	<button id="changeKiBtn">Change</button>
+      </p>
+      <p>
+	<label for="KdInput">Derivative Gain (Kd):</label>
+	<input id="KdInput" name="Kd">
+	<button id="changeKdBtn">Change</button>
       </p>
       
-      <p>
-	<button id="getvalue">Get value</button>
-	<button id="setDefault">Set to Default</button>
-      </p>
     </div>
 
     

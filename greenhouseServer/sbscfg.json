@@ -8,13 +8,14 @@
     "logInterval": 300,
     "waterControlPin": 22,
     "waterMonitorPin": 23,
-    "waterCycleSecs": 3600,
+    "waterCycleSecs": 1800,
+    "timeOnLimit": 300,
     "waterOnSecs": 40,
     "Kp": 10,
-    "Ki": 1,
-    "Kd": 0,
+    "Ki": 0.1,
+    "Kd": 0.1,
     "opMode": "Auto",
-    "setPoint": 91,
+    "setPoint": 130,
     "temp2Dev": "28-0000044aca36",
     "soilProbePin": 5
 }

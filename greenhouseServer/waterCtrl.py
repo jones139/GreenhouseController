@@ -34,24 +34,32 @@ class _waterCtrlThread(threading.Thread):
 
         # Initialise settings from database, or config file if DB values not set
         self.db = dbConn.DbConn(self.dbPath)
-        dbOnSecs, dbCycleSecs = self.db.getWaterControlVals()
+        dbSetpoint, dbKp, dbKi, dbKd, dbCycleSecs, dbControlVal = self.db.getWaterControlVals()
         self.db.close()
-        if (dbOnSecs is None):
-            self.onSecs = cfg['waterOnSecs']
+        if (dbSetpoint is None):
+            self.setPoint = cfg['setPoint']
         else:
-            self.onSecs = dbOnSecs
+            self.setPoint = dbSetpoint
         if (dbCycleSecs is None):
             self.cycleSecs = cfg['waterCycleSecs']
         else:
             self.cycleSecs = dbCycleSecs
-
-        self.Kp = cfg['Kp']
-        self.Ki = cfg['Ki']
-        self.Kd = cfg['Kd']
+        if (dbKp is None):
+            self.Kp = cfg['Kp']
+        else:
+            self.Kp = dbKp
+        if (dbKi is None):
+            self.Ki = cfg['Ki']
+        else:
+            self.Ki = dbKi
+        if (dbKd is None):
+            self.Kd = cfg['Kd']
+        else:
+            self.Kd = dbKd
         self.opMode = cfg['opMode']
-        self.setPoint = cfg['setPoint']
+        self.timeOnLimit = cfg['timeOnLimit']
             
-        self.logger.info("_waterCtrlThread.__init__(): onSecs=%f, cycleSecs=%f" % (self.onSecs, self.cycleSecs))
+        self.logger.info("_waterCtrlThread.__init__(): cycleSecs=%f, setpoint=%f" % (self.cycleSecs, self.setPoint))
         self.logger.info("_waterCtrlThread.__init__(): opMode=%s, (Kp,Ki,Kd)=(%f,%f,%f)" % (self.opMode, self.Kp, self.Ki, self.Kd))
 
         self.DEBUG = debug
@@ -73,7 +81,7 @@ class _waterCtrlThread(threading.Thread):
         self.pid = simple_pid.PID(self.Kp, self.Ki, self.Kd,
                                   setpoint=self.setPoint,
                                   sample_time=None,
-                                  output_limits=(0,120))
+                                  output_limits=(0,self.timeOnLimit))
         
         while self.runThread:
             # Start cycle
@@ -86,22 +94,16 @@ class _waterCtrlThread(threading.Thread):
             self.logger.info("soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
                   (self.soilRes, self.soilCond, self.setPoint, self.controlVal))
             # Write current watering status to db before we change anything.
-            dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs, self.controlVal);
+            self.writeWaterData()
             self.waterOn()
             self.logger.info("waterOn")
-            #if (self.DEBUG): print("_waterCtrlThread.run(): waterOn")
-            dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs, self.controlVal);
             # Wait for time to switch water off.
+            dt = datetime.datetime.now()
             while (dt - self.waterOnTime).total_seconds() < self.onSecs:
                 time.sleep(0.1)
                 dt = datetime.datetime.now()
-            dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs, self.controlVal);
+            self.writeWaterData()
             self.waterOff()
-            dt = datetime.datetime.now()
-            self.db.writeWaterData(dt, self.waterStatus, self.onSecs, self.cycleSecs, self.controlVal);
             self.logger.info("waterOff")
             #if (self.DEBUG): print("_waterCtrlThread.run(): waterOff")
             while (dt - self.cycleStartTime).total_seconds() < self.cycleSecs:
@@ -117,18 +119,34 @@ class _waterCtrlThread(threading.Thread):
         self.logger.info("Stopping thread")
         self.runThread = False
 
+    def writeWaterData(self):
+        self.db = dbConn.DbConn(self.dbPath)
+        dt = datetime.datetime.now()
+        self.db.writeWaterData(dt, self.waterStatus,
+                               self.onSecs,
+                               self.cycleSecs,
+                               self.controlVal,
+                               self.setPoint,
+                               self.Kp,
+                               self.Ki,
+                               self.Kd);
+        self.db.close()
+
     def waterOn(self):
         self.logger.info("waterOn()")
         if (self.DEBUG): print("_waterCtrlThread.waterOn()")
         GPIO.output(self.waterControlPin, GPIO.HIGH)
         self.waterOnTime = datetime.datetime.now()
         self.waterStatus=1
+        self.writeWaterData()
 
     def waterOff(self):
         self.logger.info("waterOff()")
         if (self.DEBUG): print("_waterCtrlThread.waterOff()")
         GPIO.output(self.waterControlPin, GPIO.LOW)
         self.waterStatus=0
+        self.writeWaterData()
+
 
 class WaterCtrlDaemon():
     '''
@@ -172,6 +190,38 @@ class WaterCtrlDaemon():
             print("waterCtrlDaemon.setOnSecs - ERROR - onSecs must not be more than cycleSecs")
             return("ERROR")
 
+    def setSetpoint(self,setpoint):
+        self.logger.info("setpoint=%f" % setpoint)
+        self.waterCtrlThread.pid.setpoint = setpoint
+        self.waterCtrlThread.setPoint = setpoint
+        self.waterCtrlThread.writeWaterData()
+
+    def setGains(self,Kp,Ki,Kd):
+        self.logger.info("Kp,Ki,Kd==%f,%f,%f" % (Kp,Ki,Kd))
+        self.waterCtrlThread.Kp=Kp
+        self.waterCtrlThread.Ki=Ki
+        self.waterCtrlThread.Kd=Kd
+        self.waterCtrlThread.pid.tunings=(Kp,Ki,Kd)
+        self.waterCtrlThread.writeWaterData()
+        
+    def setKp(self,Kp):
+        self.logger.info("Kp==%f" % (Kp))
+        self.waterCtrlThread.Kp=Kp
+        self.waterCtrlThread.pid.Kp=Kp
+        self.waterCtrlThread.writeWaterData()
+        
+    def setKi(self,Ki):
+        self.logger.info("Ki==%f" % (Ki))
+        self.waterCtrlThread.Ki=Ki
+        self.waterCtrlThread.pid.Ki=Ki
+        self.waterCtrlThread.writeWaterData()
+
+    def setKd(self,Kd):
+        self.logger.info("Kd==%f" % (Kd))
+        self.waterCtrlThread.Kd=Kd
+        self.waterCtrlThread.pid.Kd=Kd
+        self.waterCtrlThread.writeWaterData()
+
     def getStatus(self):
         statusObj = {}
         statusObj['onSecs'] = self.waterCtrlThread.onSecs
@@ -179,11 +229,14 @@ class WaterCtrlDaemon():
         statusObj['waterStatus']=self.waterCtrlThread.waterStatus
         statusObj['soilCond']=self.waterCtrlThread.soilCond
         statusObj['soilRes']=self.waterCtrlThread.soilRes
-        statusObj['setPoint']=self.waterCtrlThread.setPoint
+        statusObj['setPoint']=self.waterCtrlThread.pid.setpoint
         statusObj['controlVal']=self.waterCtrlThread.controlVal
-        statusObj['Kp']=self.waterCtrlThread.Kp
-        statusObj['Ki']=self.waterCtrlThread.Ki
-        statusObj['Kd']=self.waterCtrlThread.Kd
+        statusObj['Kp']=self.waterCtrlThread.pid.tunings[0]
+        statusObj['Ki']=self.waterCtrlThread.pid.tunings[1]
+        statusObj['Kd']=self.waterCtrlThread.pid.tunings[2]
+        statusObj['Cp']=self.waterCtrlThread.pid.components[0]
+        statusObj['Ci']=self.waterCtrlThread.pid.components[1]
+        statusObj['Cd']=self.waterCtrlThread.pid.components[2]
         return statusObj
         
 if __name__ == '__main__':

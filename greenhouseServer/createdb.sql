@@ -9,5 +9,9 @@ create table water (
        data_date datetime,
        waterStatus int,
        onTime int,
-       cycleTime int);
+       cycleTime int,
+       setpoint real,
+       Kp real,
+       Ki real,
+       Kd real);
        

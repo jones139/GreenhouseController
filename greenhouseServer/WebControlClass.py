@@ -40,7 +40,7 @@ class WebControlClass:
         def server_static(filepath):
             scriptPath = os.path.dirname(os.path.realpath(__file__))
             wwwPath = os.path.join(scriptPath,'www')
-            print("wwwPath=%s" % wwwPath)
+            #print("wwwPath=%s" % wwwPath)
             return bottle.static_file(filepath, root=wwwPath)
 
         @app.route('/')

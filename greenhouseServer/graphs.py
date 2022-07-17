@@ -106,7 +106,7 @@ def plotWaterGraph(df, titleStr, outFname):
     df.plot(ax=ax, y='onTime')#, x='data_date')
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
-    ax.set_ylabel("Watering Time (sec per hour)")
+    ax.set_ylabel("Watering Time (sec per cycle)")
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)
@@ -116,4 +116,4 @@ def plotWaterGraph(df, titleStr, outFname):
 
 if __name__ == "__main__":
     print("graphs.py.__main__")
-    plotGraphs(os.path.join("/home/graham/GreenhouseController/greenhouseServer/www/data","greenhouse.db"), "/home/graham/GreenhouseController/greenhouseServer/www/data", 2.0, 'H')
+    plotGraphs(os.path.join("/home/graham/GreenhouseController/greenhouseServer/www/data","greenhouse.db"), "/home/graham/GreenhouseController/greenhouseServer/www/data", 2.0, None)

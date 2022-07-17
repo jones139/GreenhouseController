@@ -59,6 +59,16 @@ class GreenhouseCtrl:
 
     def setOnSecs(self, onSecs):
         return self.waterCtrl.setOnSecs(onSecs)
+
+    def setSetpoint(self, setpoint):
+        return self.waterCtrl.setSetpoint(setpoint)
+    
+    def setKp(self, Kp):
+        return self.waterCtrl.setKp(Kp)
+    def setKi(self, Ki):
+        return self.waterCtrl.setKi(Ki)
+    def setKd(self, Kd):
+        return self.waterCtrl.setKd(Kd)
     
         
 if __name__ == "__main__":

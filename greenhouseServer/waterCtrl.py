@@ -12,6 +12,7 @@ import logging
 import RPi.GPIO as GPIO
 import simple_pid
 import dbConn
+import monitorDaemon
 
 class _waterCtrlThread(threading.Thread):
     runDaemon = False
@@ -89,8 +90,9 @@ class _waterCtrlThread(threading.Thread):
             self.db = dbConn.DbConn(self.dbPath)
             envData = self.db.getLatestMonitorData()
             self.db.close()
-            self.soilRes = envData[5]
-            self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
+            self.soilRes = (envData[5]+envData[6]+envData[7]+envData[8])/4.0
+            #self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
+            self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"CAP")
             self.controlVal = self.pid(self.soilCond)
             self.onSecs = self.controlVal
             self.logger.info("Cycle_Start: soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %

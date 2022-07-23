@@ -1,0 +1,24 @@
+ADC Wiring for capacitance sensor
+
+Supply: 3.29V
+
+Wires:
+A0 Blue:  CH1: 0-26344
+A1 Yellow: CH2: 0-26346
+A2 Green:  CH3: 0-26346
+A3 White:  CH0: 0-26346
+
+So ADC works, but the software channel numbers are different to the labels
+on the PCB.
+
+Set Gain to 2/3 rather than 1 - this got the ADC on range so it now
+responds to changes.
+
+With sensor dry, indicated value is 19420.
+In damp soil, indicated value is ~19000
+Very wet soil ~18000
+
+Soil  : Sensor 4
+Soil1 : Sensor 1
+Soil2 : Sensor 2
+Soil3 : Sensr 3

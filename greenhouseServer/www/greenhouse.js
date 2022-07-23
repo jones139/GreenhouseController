@@ -1,3 +1,10 @@
+
+
+counts2moisture = function(counts) {
+    moisture = 19420 - counts;
+    return moisture
+};
+
 send_url = function(urlStr) {
     // Send the specified URL to the server, then call the get_settings function.
     $.ajax({url:urlStr,
@@ -21,13 +28,6 @@ rebootSbs = function(){
     }   
 };
 
-
-kMirrorMove = function(){
-    newPos = $("#kMirrorMoveTxt").val()
-    url = "/kMirrorMoveTo/"+newPos;
-    console.log(url);
-    send_url(url);
-};
 
 changeSetpoint = function() {
     newSetpoint = $("#setpointInput").val();
@@ -122,9 +122,21 @@ function populate_form(statusStr) {
 	    $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
 	if (typeof statusObj.monitorData.data.light != "undefined") 
 	    $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
-	if (typeof statusObj.monitorData.data.soil != "undefined") 
+	if (typeof statusObj.monitorData.data.soil != "undefined") {
+	    soilm = counts2moisture(statusObj.monitorData.data.soil);
+	    soilm1 = counts2moisture(statusObj.monitorData.data.soil1);
+	    soilm2 = counts2moisture(statusObj.monitorData.data.soil2);
+	    soilm3 = counts2moisture(statusObj.monitorData.data.soil3);
+	    soilmAvg = (soilm + soilm1 + soilm2 + soilm3) / 4.0;
 	    $("#soilTxt").html(statusObj.monitorData.data.soil.toFixed(0) +" counts (" +
-		       (1e6*1.0/statusObj.monitorData.data.soil).toFixed(1) + " uC)");
+			       soilmAvg.toFixed(1) + " uC)"
+			       +"<br/>("
+				+soilm1.toFixed(0) + ","
+			       +soilm2.toFixed(0) + ","
+			       +soilm3.toFixed(0) + ","
+			       +soilm.toFixed(0) + ")"
+			       );
+	}
     }
 
     // Controller

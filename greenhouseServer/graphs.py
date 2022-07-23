@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')  # avoid warnings about GUIs and threads
 import matplotlib.pyplot as plt
-
+import monitorDaemon
 
 def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
     # create plots of hourly data for web interface
@@ -36,7 +36,13 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
                    os.path.join(dataFolder,"chart2.png")
                    )
 
-    df['condy'] = 1e6 * 1.0 / df['soil']
+    df['condy'] = monitorDaemon.counts2moisture(df['soil'],"CAP")
+    df['condy1'] = monitorDaemon.counts2moisture(df['soil1'],"CAP")
+    df['condy2'] = monitorDaemon.counts2moisture(df['soil2'],"CAP")
+    df['condy3'] = monitorDaemon.counts2moisture(df['soil3'],"CAP")
+    #df['condy1'] = 1e6 * 1.0 / df['soil1']
+    #df['condy2'] = 1e6 * 1.0 / df['soil2']
+    #df['condy3'] = 1e6 * 1.0 / df['soil3']
     plotSoilGraph(df,
                    "GreenHouse History (Soil Conductivity)\n(to %s)"
                    % (df.index[-1].strftime("%d-%m-%y %H:%M")),
@@ -90,10 +96,13 @@ def plotSoilGraph(df, titleStr, outFname):
     # Soil Moisture Chart
     fig, ax = plt.subplots()
     df.plot(ax=ax, y='condy')#, x='data_date')
+    df.plot(ax=ax, y='condy1')
+    df.plot(ax=ax, y='condy2')
+    df.plot(ax=ax, y='condy3')
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
     ax.set_ylabel("Soil Conductivity (micro counts)")
-    ax.set_ylim(0,200)
+    ax.set_ylim(0,2000)
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)

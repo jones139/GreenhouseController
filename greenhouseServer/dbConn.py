@@ -8,20 +8,25 @@ class DbConn:
     def __init__(self,dbFname):
         self.db = sqlite3.connect(dbFname)
 
-    def writeMonitorData(self,data_date,temp1, temp2, rh, light,soil):
+    def writeMonitorData(self,data_date,
+                         temp1, temp2,
+                         rh, light,
+                         soil, soil1, soil2, soil3):
         # Note - triple quote for multi line string
         cur = self.db.cursor()
         cur.execute("""insert into 'environment'
-        ('data_date', 'temp1', 'temp2', 'rh', 'light', 'soil')
-        values (?, ?, ?, ?, ?, ?);""",
-                        (data_date, temp1, temp2, rh, light, soil))
+        ('data_date', 'temp1', 'temp2', 'rh', 'light', 'soil','soil1','soil2','soil3')
+        values (?, ?, ?, ?, ?, ?,?,?,?);""",
+                        (data_date, temp1, temp2,
+                         rh, light,
+                         soil,soil1,soil2,soil3))
 
         self.db.commit()
 
         
     def getMonitorData(self, sdate, edate, retDf=False):
         #print(sdate,type(sdate), edate, type(edate))
-        queryStr = """select data_date, temp1, temp2, rh, light, soil from environment where data_date >= ? and data_date <= ?;"""
+        queryStr = """select data_date, temp1, temp2, rh, light, soil,soil1,soil2,soil3 from environment where data_date >= ? and data_date <= ?;"""
         paramsTuple = (sdate, edate)
         if retDf:
             df = pd.read_sql (queryStr,
@@ -35,7 +40,7 @@ class DbConn:
             return cur.fetchall()
 
     def getLatestMonitorData(self):
-        queryStr = """select data_date, temp1, temp2, rh, light, soil from environment order by rowid desc limit 1;"""
+        queryStr = """select data_date, temp1, temp2, rh, light, soil,soil1,soil2,soil3 from environment order by rowid desc limit 1;"""
         cur = self.db.cursor()
         cur.execute(queryStr)
         return cur.fetchone()

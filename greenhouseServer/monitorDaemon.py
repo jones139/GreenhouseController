@@ -15,6 +15,21 @@ import dbConn
 import graphs
 
 
+    
+
+
+def counts2moisture(counts, mode="CAP"):
+    if (mode=="RES"):
+        moisture = 1e6 * 1.0 / counts
+    elif (mode=="CAP"):
+        moisture = 19420 - counts
+    else:
+        print("ERROR - Unrecognsised mode: %s" % mode)
+        moisture = 9e99
+    return moisture
+
+
+
 class _monitorThread(threading.Thread):
     LOG_INTERVAL = 10  # sec
     runDaemon = False
@@ -62,6 +77,9 @@ class _monitorThread(threading.Thread):
         humSum = 0.
         lightSum = 0.
         soilSum = 0.
+        soilSum1 = 0.
+        soilSum2 = 0.
+        soilSum3 = 0.
         count = 0
         for rec in buf:
             tempSum += rec['temp']
@@ -69,13 +87,24 @@ class _monitorThread(threading.Thread):
             lightSum += rec['light']
             temp2Sum += rec['temp2']
             soilSum += rec['soil']
+            soilSum1 += rec['soil1']
+            soilSum2 += rec['soil2']
+            soilSum3 += rec['soil3']
             count += 1
         tempMean = tempSum / count
         temp2Mean = temp2Sum / count
         humMean = humSum / count
         lightMean = lightSum / count
         soilMean = soilSum / count
-        return(tempMean, humMean, lightMean, temp2Mean, soilMean)
+        soil1Mean = soilSum1 / count
+        soil2Mean = soilSum2 / count
+        soil3Mean = soilSum3 / count
+        return(tempMean, humMean, lightMean, temp2Mean,
+               soilMean,
+               soil1Mean,
+               soil2Mean,
+               soil3Mean
+               )
 
     def readDs18B20(self, id):
         """ Attemptot read the value of the DS18B20 temperature device id 
@@ -115,6 +144,15 @@ class _monitorThread(threading.Thread):
         self.db = dbConn.DbConn(self.dbPath)
         #outFile = open(self.outFname,'a')
         data = {}
+        data['meanTemp'] = -999
+        data['meanHumidity'] = -999
+        data['meanLight'] = -999
+        data['meanTemp2'] = -999
+        data['meanSoil'] = -999
+        data['meanSoil1'] = -999
+        data['meanSoil2'] = -999
+        data['meanSoil3'] = -999
+
         lastLogTime = datetime.datetime.now()
         while self.runThread:
             dt = datetime.datetime.now()
@@ -122,34 +160,52 @@ class _monitorThread(threading.Thread):
             hum, temp = sht3x_main.calculation(tData,hData)
             light = self.lightSensor.measure_high_res()
             temp2 = self.readDs18B20(self.temp2Dev)
-            #soilMoisture = GPIO.input(self.soilProbePin)
-            soilMoisture = self.adc.read_adc(0,1)
+            # Use lowest gain to keep the sensors on scale as we are using 5V
+            # supplies to the sensor and a 3.3V ADC.
+            soilMoisture = self.adc.read_adc(0,2/3)
+            self.logger.info("soilMoisture=%d" % soilMoisture)
+            time.sleep(0.1)
+            soilMoisture1 = self.adc.read_adc(1,2/3)
+            self.logger.info("soilMoisture1=%d" % soilMoisture1)
+            time.sleep(0.1)
+            soilMoisture2 = self.adc.read_adc(2,2/3)
+            self.logger.info("soilMoisture2=%d" % soilMoisture2)
+            time.sleep(0.1)
+            soilMoisture3 = self.adc.read_adc(3,2/3)
+            self.logger.info("soilMoisture3=%d" % soilMoisture3)
             
             data['humidity'] = hum
             data['temp'] = temp
             data['light'] = light
             data['temp2'] = temp2
             data['soil'] = soilMoisture
+            data['soil1'] = soilMoisture1
+            data['soil2'] = soilMoisture2
+            data['soil3'] = soilMoisture3
             self.curTime = dt
             self.curData = data
             self.dataBuffer.append(data)
             if (dt.timestamp() - lastLogTime.timestamp())>=self.logInterval:
-                (meanTemp, meanHumidity, meanLight, meanTemp2, meanSoil) = self.calcMeans(self.dataBuffer)
+                (meanTemp, meanHumidity, meanLight, meanTemp2,
+                 meanSoil,meanSoil1,meanSoil2,meanSoil3) = self.calcMeans(self.dataBuffer)
+                data['meanTemp'] = meanTemp
+                data['meanHumidity'] = meanHumidity
+                data['meanLight'] = meanLight
+                data['meanTemp2'] = meanTemp2
+                data['meanSoil'] = meanSoil
+                data['meanSoil1'] = meanSoil1
+                data['meanSoil2'] = meanSoil2
+                data['meanSoil3'] = meanSoil3
                 print("Logging Data....")
-                # Write to simple csv file
-                #outFile.write(dt.strftime("%Y-%m-%d %H:%M:%S"))
-                #outFile.write(", %ld, %.1f, %.1f, %.1f\n" % (
-                #    self.curTime.timestamp(),
-                #    meanTemp, meanHumidity, meanLight))
-                #outFile.flush()
-
                 # write to database
                 self.db.writeMonitorData(self.curTime,
-                                  meanTemp, meanTemp2,
-                                  meanHumidity,
-                                  meanLight, meanSoil)
-
-                #graphs.plotGraphs(self.dbPath, self.dataFolder, 2.0, 'H')
+                                         meanTemp, meanTemp2,
+                                         meanHumidity,
+                                         meanLight,
+                                         meanSoil,
+                                         meanSoil1,
+                                         meanSoil2,
+                                         meanSoil3)
 
                 lastLogTime = dt
                 self.dataBuffer = []

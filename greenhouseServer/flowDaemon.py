@@ -3,10 +3,12 @@
 # Based on https://medium.com/@rxseger/interrupt-driven-i-o-on-raspberry-pi-3-with-leds-and-pushbuttons-rising-falling-edge-detection-36c14e640fef
 # interrupt-based GPIO example using LEDs and pushbuttons
 
+import os
 import time
 import datetime
 import threading
 import logging
+import sqlite3
 
 import RPi.GPIO as GPIO
 import sbsCfg
@@ -27,6 +29,7 @@ class _flowThread(threading.Thread):
 
         threading.Thread.__init__(self)
         self.DEBUG = debug
+        self.dbPath = os.path.join(cfg['dataFolder'],cfg['dbFname'])
         self.runThread = True
         self.count = 0
         self.flowEncPin = cfg['waterMonitorPin']
@@ -46,18 +49,39 @@ class _flowThread(threading.Thread):
         else:
             print("WATER_OFF_DETECTED")
             self.waterStatus = 0
+        self.writeToDb(self.waterStatus,"flowDaemon Initialised")
             
 
+    def writeToDb(self, waterStatus, eventTxt=""):
+        db = sqlite3.connect(self.dbPath)
+        # Note - triple quote for multi line string
+        cur = db.cursor()
+        data_date = datetime.datetime.now()
+        cur.execute(
+            """insert into 'system'
+            ('data_date', 'measuredWaterStatus', 'systemEvent')
+            values (?, ?, ?);""",
+            (data_date, waterStatus, eventTxt)
+        )
+
+        db.commit()
+
+            
 
     def waterChangeDetect(self, pin):
         ''' Interupt driven routine to detect changes in water state.'''
         if (pin == self.flowEncPin):
             if GPIO.input(self.flowEncPin):
-                print("WATER_ON_DETECTED")
+                #print("WATER_ON_DETECTED")
+                self.logger.info("WATER_ON_DETECTED")
                 self.waterStatus = 1
+                self.writeToDb(0,"Water_On")
+                self.writeToDb(1,"Water_On")
             else:
-                print("WATER_OFF_DETECTED")
+                self.logger.info("WATER_OFF_DETECTED")
                 self.waterStatus = 0
+                self.writeToDb(1,"Water_Off")
+                self.writeToDb(0,"Water_Off")
                 
     def getWaterStatus(self):
         return self.waterStatus
@@ -70,6 +94,8 @@ class _flowThread(threading.Thread):
         while self.runThread:
             #print(GPIO.input(self.flowEncPin))
             time.sleep(self.rate_delay)
+        self.writeToDb(self.waterStatus,"flowDaemon Stopped")
+
 
     def stop(self):
         """ Stop the background thread"""
@@ -139,4 +165,16 @@ class FlowDaemon():
 
 if (__name__ == "__main__"):    
     print("flowDaemon.main()")
+    cfgObj = {
+        "debug": True,
+        "logName": "greenhouseSvr",
+        "logFolder": "/home/graham/GreenhouseController/greenhouseServer/www/data",
+        "dataFolder": "/home/graham/GreenhouseController/greenhouseServer/www/data",
+        "dbFname": "greenhouse.db",
+        "waterMonitorPin": 23,
+    }
+
+    flowThread = _flowThread(cfgObj, True)
+    flowThread.writeToDb(0,"offTest")
+    flowThread.writeToDb(1,"onTest")
 

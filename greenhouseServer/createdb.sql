@@ -14,4 +14,8 @@ create table water (
        Kp real,
        Ki real,
        Kd real);
-       
+create table system (       
+       data_date datetime,
+       measuredWaterStatus int,
+       systemEvent text
+       );

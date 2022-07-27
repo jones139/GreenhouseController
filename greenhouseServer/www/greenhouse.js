@@ -1,4 +1,5 @@
 
+var statusObj;  // Oh no, a global variable, sorry!
 
 counts2moisture = function(counts) {
     moisture = 19096 - counts;
@@ -28,6 +29,47 @@ rebootSbs = function(){
     }   
 };
 
+showSettingsDialog = function() {
+    console.log("showSettingsDialog - opMode="+statusObj.waterCtrl.opMode);
+    $("#opModeSb").val(statusObj.waterCtrl.opMode);
+    console.log($("#opModeSb :selected").val());
+    $("#cycleSecsInput").val(statusObj.waterCtrl.cycleSecs);
+    $("#onSecsInput").val(statusObj.waterCtrl.onSecs);
+    $("#setpointInput").val(statusObj.waterCtrl.setPoint);
+    $("#KpInput").val(statusObj.waterCtrl.Kp);
+    $("#KiInput").val(statusObj.waterCtrl.Ki);
+    $("#KdInput").val(statusObj.waterCtrl.Kd);
+    
+    $("#dlgOverlay").show();
+    $("#settingsDlg").show();
+};
+
+quitDialog = function() {
+    $("#dlgOverlay").hide();
+    $("#settingsDlg").hide();
+};
+
+changeOpMode = function() {
+    console.log("changeOpMode");
+    val = $("#opModeSb :selected").val();
+    url = "/opMode/"+val;
+    console.log(url);
+    send_url(url);
+};
+
+changeCycleSecs = function() {
+    val = $("#cycleSecsInput").val();
+    url = "/cycleSecs/"+val;
+    console.log(url);
+    send_url(url);
+};
+
+changeOnSecs = function() {
+    val = $("#onSecsInput").val();
+    url = "/onSecs/"+val;
+    console.log(url);
+    send_url(url);
+};
 
 changeSetpoint = function() {
     newSetpoint = $("#setpointInput").val();
@@ -35,6 +77,7 @@ changeSetpoint = function() {
     console.log(url);
     send_url(url);
 };
+
 
 changeKp = function() {
     newKp = $("#KpInput").val();
@@ -110,7 +153,7 @@ function populate_form(statusStr) {
     //$("#msgBox").html(statusStr);
     $("#errorBox").html("OK");
     $("#errorBox").removeClass("warn");
-    var statusObj = JSON.parse(statusStr);
+    statusObj = JSON.parse(statusStr);
 
 
     // Environment
@@ -155,6 +198,7 @@ function populate_form(statusStr) {
 		     );
 
     // Watering
+    $("#opModeTxt").html(statusObj.waterCtrl.opMode);
     $("#cycleSecsTxt").html(statusObj.waterCtrl.cycleSecs.toFixed(1) +" sec");
     $("#onSecsTxt").html(statusObj.waterCtrl.onSecs.toFixed(1) +" sec");
     if (statusObj.waterCtrl.waterStatus) {
@@ -170,6 +214,12 @@ function populate_form(statusStr) {
 
 $(document).ready(function(){
     $("#rebootSbsBtn").click(rebootSbs);
+    $("#changeSettingsBtn").click(showSettingsDialog);
+    $("#quitDlgBtn").click(quitDialog);
+    $("#changeOpModeBtn").click(changeOpMode);
+    $("#opModeSb").change(changeOpMode);
+    $("#changeOnSecsBtn").click(changeOnSecs);
+    $("#changeCycleSecsBtn").click(changeCycleSecs);
     $("#changeSetpointBtn").click(changeSetpoint);
     $("#changeKpBtn").click(changeKp);
     $("#changeKiBtn").click(changeKi);

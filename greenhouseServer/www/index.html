@@ -43,12 +43,14 @@
       </tr>
       <tr>
 	<th rowspan=2>Watering Status</th>
+	<th>Mode</th>
 	<th>Cycle Time (s)</th>
 	<th>On Time (s)</th>
 	<th>Water Status</th>
-	<td rowspan=2><button id="changeOnSecsBtn">Change</button></td>
+	<td rowspan=2><button id="changeSettingsBtn">Change</button></td>
       </tr>
       <tr>
+	<td id="opModeTxt">---</td>
 	<td id="cycleSecsTxt">---</td>
 	<td id="onSecsTxt">---</td>
 	<td id="waterStatusTxt">---</td>
@@ -82,7 +84,27 @@
 	<td><button id="rebootSbsBtn">Reboot Controller</button></td>
       </tr>
     </table>
-    <div id="changeSetpointDlg">
+
+    <div id="dlgOverlay"></div>
+    <div id="settingsDlg">
+      <p>
+	<label for="opMode">Operating Mode:</label>
+	<select name="opMode" id="opModeSb">
+	  <option value="off">Off</option>
+	  <option value="time">Time</option>
+	  <option value="moist">Moisture Control</option>
+	</select>
+      </p>
+      <p>
+	<label for="onSecsInput">onSecs (for time mode):</label>
+	<input id="onSecsInput" name="onSecs">
+	<button id="changeOnSecsBtn">Change</button>
+      </p>
+      <p>
+	<label for="cycleSecsInput">cycleSecs (all modes):</label>
+	<input id="cycleSecsInput" name="cycleSecs">
+	<button id="changeCycleSecsBtn">Change</button>
+      </p>
       <p>
 	<label for="setpointInput">Conductivity Setpoint (uC):</label>
 	<input id="setpointInput" name="setpoint">
@@ -103,6 +125,8 @@
 	<input id="KdInput" name="Kd">
 	<button id="changeKdBtn">Change</button>
       </p>
+      <br/>
+      <p><button id="quitDlgBtn">Quit</button></p>
       
     </div>
 

@@ -57,8 +57,14 @@ class GreenhouseCtrl:
         '''
         return self.cfg
 
+    def setOpMode(self, opMode):
+        return self.waterCtrl.setOpMode(opMode)
+
     def setOnSecs(self, onSecs):
         return self.waterCtrl.setOnSecs(onSecs)
+
+    def setCycleSecs(self, cycleSecs):
+        return self.waterCtrl.setCycleSecs(cycleSecs)
 
     def setSetpoint(self, setpoint):
         return self.waterCtrl.setSetpoint(setpoint)

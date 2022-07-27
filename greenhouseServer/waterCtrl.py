@@ -95,21 +95,27 @@ class _waterCtrlThread(threading.Thread):
             #self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
             self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"CAP")
             self.controlVal = self.pid(self.soilCond)
-            self.onSecs = self.controlVal
-            self.logger.info("Cycle_Start: soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
+
+            # Set the cycle watering on time based on the operating mode
+            if (self.opMode=="moist"):
+                self.onSecs = self.controlVal
+                self.logger.info("Cycle_Start: soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
                   (self.soilRes, self.soilCond, self.setPoint, self.controlVal))
-            # Write current watering status to db before we change anything.
-            self.writeWaterData()
-            self.waterOn()
-            self.logger.info("waterOn")
-            # Wait for time to switch water off.
-            dt = datetime.datetime.now()
-            while (dt - self.waterOnTime).total_seconds() < self.onSecs:
-                time.sleep(0.1)
-                dt = datetime.datetime.now()
-            self.writeWaterData()
-            self.waterOff()
-            self.logger.info("waterOff")
+            elif (self.opMode=="time"):
+                self.onSecs = self.cfg['waterOnSecs']
+            elif (self.opMode=="off"):
+                self.onSecs = 0
+            else:
+                self.logger.error("Unrecognised operating mode '%s'"
+                                  % self.opMode)
+                self.onSecs = 0
+
+            # Apply some water
+            if (self.onSecs>0):
+                self.waterForTime(self.onSecs)
+            else:
+                logger.info("onSecs <= 0 secs - not watering")
+                self.writeWaterData()
 
             # Wait for end of cycle
             dt = datetime.datetime.now()
@@ -139,20 +145,34 @@ class _waterCtrlThread(threading.Thread):
                                self.Kd);
         self.db.close()
 
+    def waterForTime(self, onSecs):
+        self.writeWaterData()
+        self.waterOn()
+        self.waterOnTime = datetime.datetime.now()
+        self.writeWaterData()
+        self.logger.info("waterOn")
+        # Wait for time to switch water off.
+        dt = datetime.datetime.now()
+        while (dt - self.waterOnTime).total_seconds() < onSecs:
+            time.sleep(0.1)
+            dt = datetime.datetime.now()
+        self.writeWaterData()
+        self.waterOff()
+        self.writeWaterData()
+        self.logger.info("waterOff")
+
+        
     def waterOn(self):
         self.logger.info("waterOn()")
         if (self.DEBUG): print("_waterCtrlThread.waterOn()")
         GPIO.output(self.waterControlPin, GPIO.HIGH)
-        self.waterOnTime = datetime.datetime.now()
         self.waterStatus=1
-        self.writeWaterData()
 
     def waterOff(self):
         self.logger.info("waterOff()")
         if (self.DEBUG): print("_waterCtrlThread.waterOff()")
         GPIO.output(self.waterControlPin, GPIO.LOW)
         self.waterStatus=0
-        self.writeWaterData()
 
 
 class WaterCtrlDaemon():
@@ -187,6 +207,11 @@ class WaterCtrlDaemon():
         self.logger.info("WaterCtrlDaemon.stop()")
         self.waterCtrlThread.stop()
 
+    def setOpMode(self,mode):
+        self.logger.info("OpMode==%s" % (mode))
+        self.waterCtrlThread.opMode = mode
+        self.waterCtrlThread.writeWaterData()
+
     def setOnSecs(self, onSecs):
         print("waterCtrlDaemon.setOnSecs(%f)" % onSecs)
         self.logger.info("WaterCtrlDaemon.stop(%f)" % onSecs)
@@ -197,6 +222,11 @@ class WaterCtrlDaemon():
             print("waterCtrlDaemon.setOnSecs - ERROR - onSecs must not be more than cycleSecs")
             return("ERROR")
 
+    def setCycleSecs(self,cycleSecs):
+        self.logger.info("cycleSecs==%d" % (cycleSecs))
+        self.waterCtrlThread.cycleSecs = cycleSecs
+        self.waterCtrlThread.writeWaterData()
+        
     def setSetpoint(self,setpoint):
         self.logger.info("setpoint=%f" % setpoint)
         self.waterCtrlThread.pid.setpoint = setpoint
@@ -231,6 +261,7 @@ class WaterCtrlDaemon():
 
     def getStatus(self):
         statusObj = {}
+        statusObj['opMode'] = self.waterCtrlThread.opMode
         statusObj['onSecs'] = self.waterCtrlThread.onSecs
         statusObj['cycleSecs'] = self.waterCtrlThread.cycleSecs
         statusObj['waterStatus']=self.waterCtrlThread.waterStatus

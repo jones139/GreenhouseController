@@ -82,8 +82,12 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
             retVal=self.getConfig()
         if (cmdStr=="rebootSbs"):
             retVal=self.rebootSbs()
+        if (cmdStr=="opMode"):
+            retVal=self.mCtrl.setOpMode(valStr)
         if (cmdStr=="onSecs"):
             retVal=self.mCtrl.setOnSecs(int(valStr))
+        if (cmdStr=="cycleSecs"):
+            retVal=self.mCtrl.setCycleSecs(int(valStr))
         if (cmdStr=="setpoint"):
             retVal=self.mCtrl.setSetpoint(float(valStr))
         if (cmdStr=="Kp"):

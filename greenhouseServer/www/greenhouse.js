@@ -1,7 +1,7 @@
 
 
 counts2moisture = function(counts) {
-    moisture = 19420 - counts;
+    moisture = 19096 - counts;
     return moisture
 };
 
@@ -128,13 +128,14 @@ function populate_form(statusStr) {
 	    soilm2 = counts2moisture(statusObj.monitorData.data.soil2);
 	    soilm3 = counts2moisture(statusObj.monitorData.data.soil3);
 	    soilmAvg = (soilm + soilm1 + soilm2 + soilm3) / 4.0;
-	    $("#soilTxt").html(statusObj.monitorData.data.soil.toFixed(0) +" counts (" +
-			       soilmAvg.toFixed(1) + " uC)"
+	    $("#soilTxt").html(
+		statusObj.monitorData.data.soil.toFixed(0) +" counts (" +
+			       soilm.toFixed(1) + " uC)"
 			       +"<br/>("
-				+soilm1.toFixed(0) + ","
+				+soilm.toFixed(0) + ","
+			       +soilm1.toFixed(0) + ","
 			       +soilm2.toFixed(0) + ","
-			       +soilm3.toFixed(0) + ","
-			       +soilm.toFixed(0) + ")"
+			       +soilm3.toFixed(0) + ")"
 			       );
 	}
     }

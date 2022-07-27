@@ -22,7 +22,7 @@ def counts2moisture(counts, mode="CAP"):
     if (mode=="RES"):
         moisture = 1e6 * 1.0 / counts
     elif (mode=="CAP"):
-        moisture = 19420 - counts
+        moisture = 19096 - counts
     else:
         print("ERROR - Unrecognsised mode: %s" % mode)
         moisture = 9e99
@@ -163,15 +163,19 @@ class _monitorThread(threading.Thread):
             # Use lowest gain to keep the sensors on scale as we are using 5V
             # supplies to the sensor and a 3.3V ADC.
             soilMoisture = self.adc.read_adc(0,2/3)
+            #soilMoisture = -1
             self.logger.info("soilMoisture=%d" % soilMoisture)
             time.sleep(0.1)
-            soilMoisture1 = self.adc.read_adc(1,2/3)
+            #soilMoisture1 = self.adc.read_adc(1,2/3)
+            soilMoisture1 = -1
             self.logger.info("soilMoisture1=%d" % soilMoisture1)
             time.sleep(0.1)
-            soilMoisture2 = self.adc.read_adc(2,2/3)
+            #soilMoisture2 = self.adc.read_adc(2,2/3)
+            soilMoisture2 = -1
             self.logger.info("soilMoisture2=%d" % soilMoisture2)
             time.sleep(0.1)
-            soilMoisture3 = self.adc.read_adc(3,2/3)
+            #soilMoisture3 = self.adc.read_adc(3,2/3)
+            soilMoisture3 = -1
             self.logger.info("soilMoisture3=%d" % soilMoisture3)
             
             data['humidity'] = hum

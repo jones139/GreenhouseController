@@ -9,7 +9,7 @@
     "waterControlPin": 22,
     "waterMonitorPin": 23,
     "waterCycleSecs": 1800,
-    "timeOnLimit": 300,
+    "timeOnLimit": 120,
     "waterOnSecs": 40,
     "Kp": 10,
     "Ki": 0.1,

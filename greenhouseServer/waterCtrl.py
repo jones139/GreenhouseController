@@ -91,6 +91,7 @@ class _waterCtrlThread(threading.Thread):
             envData = self.db.getLatestMonitorData()
             self.db.close()
             self.soilRes = (envData[5]+envData[6]+envData[7]+envData[8])/4.0
+            self.soilRes = (envData[5])/1.0
             #self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
             self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"CAP")
             self.controlVal = self.pid(self.soilCond)

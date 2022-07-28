@@ -13,7 +13,7 @@ import sht3x_main
 import bh1750
 import dbConn
 import graphs
-
+import soilSerial
 
     
 
@@ -78,6 +78,7 @@ class _monitorThread(threading.Thread):
         self.adc = Adafruit_ADS1x15.ADS1115()
         #self.soilMoistureLevel = adc.read_adc(0,1)
 
+        self.soilSerial = soilSerial.SoilSerial(self.cfg)
     
     def calcMeans(self,buf):
         tempSum = 0.
@@ -170,21 +171,33 @@ class _monitorThread(threading.Thread):
             temp2 = self.readDs18B20(self.temp2Dev)
             # Use lowest gain to keep the sensors on scale as we are using 5V
             # supplies to the sensor and a 3.3V ADC.
-            soilMoisture = self.adc.read_adc(0,2/3)
+            soilMoisture = counts2moisture_new(self.adc.read_adc(0,2/3),
+                                                self.cfg['soilMonitors'][0])
             #soilMoisture = -1
             self.logger.info("soilMoisture=%d" % soilMoisture)
-            time.sleep(0.1)
+
+            soilParts = self.soilSerial.getStatus()
+            print(soilParts)
+            #time.sleep(0.1)
             #soilMoisture1 = self.adc.read_adc(1,2/3)
-            soilMoisture1 = -1
+            soilMoisture1 = counts2moisture_new(int(soilParts[0]),
+                                                self.cfg['soilMonitors'][1])
             self.logger.info("soilMoisture1=%d" % soilMoisture1)
-            time.sleep(0.1)
+            #time.sleep(0.1)
             #soilMoisture2 = self.adc.read_adc(2,2/3)
-            soilMoisture2 = -1
+            #soilMoisture2 = -1
+            soilMoisture2 = counts2moisture_new(int(soilParts[1]),
+                                                self.cfg['soilMonitors'][2])
             self.logger.info("soilMoisture2=%d" % soilMoisture2)
-            time.sleep(0.1)
+            #time.sleep(0.1)
             #soilMoisture3 = self.adc.read_adc(3,2/3)
-            soilMoisture3 = -1
+            #soilMoisture3 = -1
+            soilMoisture3 = counts2moisture_new(int(soilParts[2]),
+                                                self.cfg['soilMonitors'][3])
             self.logger.info("soilMoisture3=%d" % soilMoisture3)
+            soilMoisture4 = counts2moisture_new(int(soilParts[3]),
+                                                self.cfg['soilMonitors'][4])
+            self.logger.info("soilMoisture4=%d" % soilMoisture4)
             
             data['humidity'] = hum
             data['temp'] = temp
@@ -194,6 +207,7 @@ class _monitorThread(threading.Thread):
             data['soil1'] = soilMoisture1
             data['soil2'] = soilMoisture2
             data['soil3'] = soilMoisture3
+            data['soil4'] = soilMoisture4
             self.curTime = dt
             self.curData = data
             self.dataBuffer.append(data)

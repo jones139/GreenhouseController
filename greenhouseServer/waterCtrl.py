@@ -100,7 +100,8 @@ class _waterCtrlThread(threading.Thread):
             self.soilRes = (envData[5]+envData[6]+envData[7]+envData[8])/4.0
             self.soilRes = (envData[5])/1.0
             #self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
-            self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"RES")
+            #self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"RES")
+            self.soilCond = self.soilRes  # We now store moisture in % moisture units so no need to convert.
             self.controlVal = self.pid(self.soilCond)
 
             # Set the cycle watering on time based on the operating mode
@@ -121,7 +122,7 @@ class _waterCtrlThread(threading.Thread):
             if (self.onSecs>0):
                 self.waterForTime(self.onSecs)
             else:
-                logger.info("onSecs <= 0 secs - not watering")
+                self.logger.info("onSecs <= 0 secs - not watering")
                 self.writeWaterData()
 
             # Wait for end of cycle

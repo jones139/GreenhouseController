@@ -72,12 +72,13 @@ class _flowThread(threading.Thread):
         ''' Interupt driven routine to detect changes in water state.'''
         if (pin == self.flowEncPin):
             if GPIO.input(self.flowEncPin):
-                #print("WATER_ON_DETECTED")
+                print("WATER_ON_DETECTED")
                 self.logger.info("WATER_ON_DETECTED")
                 self.waterStatus = 1
                 self.writeToDb(0,"Water_On")
                 self.writeToDb(1,"Water_On")
             else:
+                print("WATER_OFF_DETECTED")
                 self.logger.info("WATER_OFF_DETECTED")
                 self.waterStatus = 0
                 self.writeToDb(1,"Water_Off")

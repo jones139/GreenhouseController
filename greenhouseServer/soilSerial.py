@@ -47,7 +47,7 @@ class SoilSerial:
                 #if (self.debug):
                 print("SoilSerial.getStatus(): retrieved %s (%d chars) OK" % (r,len(r)))
                 try:
-                    setParts = r.split(",")
+                    setParts = r.strip().split(",")
                     statusLst = setParts
                 except:
                     print("SoilSerial.getStatus() - ERROR Parsing return value %s" % r)

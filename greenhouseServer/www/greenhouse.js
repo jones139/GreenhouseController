@@ -1,17 +1,6 @@
 
 var statusObj;  // Oh no, a global variable, sorry!
 
-counts2moisture = function(counts, mode) {
-    if (mode=="CAP") {
-	moisture = 19096 - counts;
-    }
-    else if (mode=="RES") {
-	moisture = 1e6 * 1.0 / counts;
-    } else {
-	moisture = -1;
-    }
-    return moisture
-};
 
 send_url = function(urlStr) {
     // Send the specified URL to the server, then call the get_settings function.
@@ -173,10 +162,10 @@ function populate_form(statusStr) {
 	if (typeof statusObj.monitorData.data.light != "undefined") 
 	    $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
 	if (typeof statusObj.monitorData.data.soil != "undefined") {
-	    soilm = counts2moisture(statusObj.monitorData.data.soil, "RES");
-	    soilm1 = counts2moisture(statusObj.monitorData.data.soil1, "CAP");
-	    soilm2 = counts2moisture(statusObj.monitorData.data.soil2, "CAP");
-	    soilm3 = counts2moisture(statusObj.monitorData.data.soil3, "CAP");
+	    soilm = statusObj.monitorData.data.soil;
+	    soilm1 = statusObj.monitorData.data.soil1;
+	    soilm2 = statusObj.monitorData.data.soil2;
+	    soilm3 = statusObj.monitorData.data.soil3;
 	    soilmAvg = (soilm + soilm1 + soilm2 + soilm3) / 4.0;
 	    $("#soilTxt").html(
 		statusObj.monitorData.data.soil.toFixed(0) +" counts (" +

@@ -35,9 +35,16 @@ class _waterCtrlThread(threading.Thread):
 
         # Initialise settings from database, or config file if DB values not set
         self.db = dbConn.DbConn(self.dbPath)
-        dbSetpoint, dbKp, dbKi, dbKd, dbCycleSecs, dbControlVal = self.db.getWaterControlVals()
+        dbSetpoint, dbKp, dbKi, dbKd, dbCycleSecs, dbControlVal, dbOnSecs, dbOpMode = self.db.getWaterControlVals()
         self.db.close()
-        self.onSecs = self.cfg['waterOnSecs']
+        if (dbOpMode is None):
+            self.opMode = cfg['opMode']
+        else:
+            self.opMode = dbOpMode
+        if (dbOnSecs is None):
+            self.onSecs = cfg['waterOnSecs']
+        else:
+            self.onSecs = dbOnSecs
         if (dbSetpoint is None):
             self.setPoint = cfg['setPoint']
         else:
@@ -58,7 +65,6 @@ class _waterCtrlThread(threading.Thread):
             self.Kd = cfg['Kd']
         else:
             self.Kd = dbKd
-        self.opMode = cfg['opMode']
         self.timeOnLimit = cfg['timeOnLimit']
             
         self.logger.info("_waterCtrlThread.__init__(): cycleSecs=%f, setpoint=%f" % (self.cycleSecs, self.setPoint))
@@ -143,7 +149,8 @@ class _waterCtrlThread(threading.Thread):
                                self.setPoint,
                                self.Kp,
                                self.Ki,
-                               self.Kd);
+                               self.Kd,
+                               self.opMode);
         self.db.close()
 
     def waterForTime(self, onSecs):

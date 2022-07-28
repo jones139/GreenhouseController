@@ -29,6 +29,14 @@ def counts2moisture(counts, mode="CAP"):
     return moisture
 
 
+def counts2moisture_new(counts,calObj):
+    DRY_LEVEL = 0.0    #y1
+    WET_LEVEL = 100.0  #y2
+    dryVal = calObj['dryVal']  #x1
+    wetVal = calObj['wetVal']  #x2
+
+    moisture = DRY_LEVEL + (counts-dryVal) * (WET_LEVEL - DRY_LEVEL) / (wetVal-dryVal)
+    return moisture
 
 class _monitorThread(threading.Thread):
     LOG_INTERVAL = 10  # sec

@@ -36,10 +36,11 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
                    os.path.join(dataFolder,"chart2.png")
                    )
 
-    df['condy'] = monitorDaemon.counts2moisture(df['soil'],"CAP")
+    df['condy'] = monitorDaemon.counts2moisture(df['soil'],"RES")
     df['condy1'] = monitorDaemon.counts2moisture(df['soil1'],"CAP")
     df['condy2'] = monitorDaemon.counts2moisture(df['soil2'],"CAP")
     df['condy3'] = monitorDaemon.counts2moisture(df['soil3'],"CAP")
+    #df['condy'] = 1e6 * 1.0 / df['soil1']
     #df['condy1'] = 1e6 * 1.0 / df['soil1']
     #df['condy2'] = 1e6 * 1.0 / df['soil2']
     #df['condy3'] = 1e6 * 1.0 / df['soil3']
@@ -102,7 +103,7 @@ def plotSoilGraph(df, titleStr, outFname):
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
     ax.set_ylabel("Soil Conductivity (micro counts)")
-    ax.set_ylim(0,2500)
+    ax.set_ylim(0,500)
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)

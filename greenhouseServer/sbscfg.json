@@ -18,5 +18,13 @@
     "opModes":["off","moist","time"],
     "setPoint": 130,
     "temp2Dev": "28-0000044aca36",
-    "soilProbePin": 5
+    "soilProbePin": 5,
+    "soilMonitors": [
+	{"source":"adc","chan":"0","type":"RES", "dryVal":12000,"wetVal":4000},
+	{"source":"ser","chan":"0","type":"CAP", "dryVal":790,"wetVal":400},
+	{"source":"ser","chan":"1","type":"CAP", "dryVal":790,"wetVal":400},
+	{"source":"ser","chan":"2","type":"CAP", "dryVal":790,"wetVal":400},
+	{"source":"ser","chan":"3","type":"CAP", "dryVal":790,"wetVal":400}
+    ],
+    "soilSerialDevice": "/dev/ttyUSB0"
 }

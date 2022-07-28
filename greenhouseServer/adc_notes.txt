@@ -22,3 +22,20 @@ Soil  : Sensor 4
 Soil1 : Sensor 1
 Soil2 : Sensor 2
 Soil3 : Sensr 3
+
+28jul2022
+Switched to use arduino nano (=10 bit ADC) because had loads of trouble
+with ADS1115.....
+Capacitance probes:
+Damp soil: 460-650
+Air: 790
+Ground: 0
+VCC: 1023
+Condy meter 200 uC at same time.
+
+19:51Set to water 10 sec in 60 sec cycle to try to increase reading....
+
+
+
+
+

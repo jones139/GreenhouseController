@@ -37,6 +37,7 @@ class _waterCtrlThread(threading.Thread):
         self.db = dbConn.DbConn(self.dbPath)
         dbSetpoint, dbKp, dbKi, dbKd, dbCycleSecs, dbControlVal = self.db.getWaterControlVals()
         self.db.close()
+        self.onSecs = self.cfg['waterOnSecs']
         if (dbSetpoint is None):
             self.setPoint = cfg['setPoint']
         else:
@@ -93,7 +94,7 @@ class _waterCtrlThread(threading.Thread):
             self.soilRes = (envData[5]+envData[6]+envData[7]+envData[8])/4.0
             self.soilRes = (envData[5])/1.0
             #self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
-            self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"CAP")
+            self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"RES")
             self.controlVal = self.pid(self.soilCond)
 
             # Set the cycle watering on time based on the operating mode
@@ -102,7 +103,7 @@ class _waterCtrlThread(threading.Thread):
                 self.logger.info("Cycle_Start: soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
                   (self.soilRes, self.soilCond, self.setPoint, self.controlVal))
             elif (self.opMode=="time"):
-                self.onSecs = self.cfg['waterOnSecs']
+                self.logger.info("Cycle_Start: onSecs="+str(self.onSecs))
             elif (self.opMode=="off"):
                 self.onSecs = 0
             else:

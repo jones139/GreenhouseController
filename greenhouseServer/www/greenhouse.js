@@ -166,22 +166,24 @@ function populate_form(statusStr) {
 	    soilm1 = statusObj.monitorData.data.soil1;
 	    soilm2 = statusObj.monitorData.data.soil2;
 	    soilm3 = statusObj.monitorData.data.soil3;
+	    soilm4 = statusObj.monitorData.data.soil4;
 	    soilmAvg = (soilm + soilm1 + soilm2 + soilm3) / 4.0;
 	    $("#soilTxt").html(
 		statusObj.monitorData.data.soil.toFixed(0) +" counts (" +
-			       soilm.toFixed(1) + " uC)"
+			       soilm.toFixed(1) + " %)"
 			       +"<br/>("
 				+soilm.toFixed(0) + ","
 			       +soilm1.toFixed(0) + ","
 			       +soilm2.toFixed(0) + ","
-			       +soilm3.toFixed(0) + ")"
+			       +soilm3.toFixed(0) + ","
+			       +soilm4.toFixed(0) + ")"
 			       );
 	}
     }
 
     // Controller
-    $("#condyTxt").html(statusObj.waterCtrl.soilCond.toFixed(1) +" uC");
-    $("#setpointTxt").html(statusObj.waterCtrl.setPoint.toFixed(1) +" uC");
+    $("#condyTxt").html(statusObj.waterCtrl.soilCond.toFixed(1) +" %");
+    $("#setpointTxt").html(statusObj.waterCtrl.setPoint.toFixed(1) +" %");
     $("#controlValTxt").html(statusObj.waterCtrl.controlVal.toFixed(1)+" sec");
     $("#PIDTxt").html("Gains (P,I,D): ("
 		      +statusObj.waterCtrl.Kp.toFixed(2)+", "

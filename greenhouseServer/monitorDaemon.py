@@ -178,26 +178,59 @@ class _monitorThread(threading.Thread):
 
             soilParts = self.soilSerial.getStatus()
             print(soilParts)
-            #time.sleep(0.1)
-            #soilMoisture1 = self.adc.read_adc(1,2/3)
-            soilMoisture1 = counts2moisture_new(int(soilParts[0]),
-                                                self.cfg['soilMonitors'][1])
-            self.logger.info("soilMoisture1=%d" % soilMoisture1)
-            #time.sleep(0.1)
-            #soilMoisture2 = self.adc.read_adc(2,2/3)
-            #soilMoisture2 = -1
-            soilMoisture2 = counts2moisture_new(int(soilParts[1]),
-                                                self.cfg['soilMonitors'][2])
-            self.logger.info("soilMoisture2=%d" % soilMoisture2)
-            #time.sleep(0.1)
-            #soilMoisture3 = self.adc.read_adc(3,2/3)
-            #soilMoisture3 = -1
-            soilMoisture3 = counts2moisture_new(int(soilParts[2]),
-                                                self.cfg['soilMonitors'][3])
-            self.logger.info("soilMoisture3=%d" % soilMoisture3)
-            soilMoisture4 = counts2moisture_new(int(soilParts[3]),
-                                                self.cfg['soilMonitors'][4])
-            self.logger.info("soilMoisture4=%d" % soilMoisture4)
+            if (len(soilParts)<4):
+                print("Error - did not receive 4 values from soilSerial")
+                self.logger.info("Error - did not receive 4 values from soilSerial")
+                soilMoisture1 = -1
+                soilMoisture2 = -1
+                soilMoisture3 = -1
+                soilMoisture4 = -1
+            else:
+                #time.sleep(0.1)
+                #soilMoisture1 = self.adc.read_adc(1,2/3)
+                try:
+                    soilMoisture1 = counts2moisture_new(5.0*soilParts[0],
+                                                        self.cfg['soilMonitors'][1])
+                except:
+                    self.logger.info("Error parsing %s" % soilParts[0])
+                    soilMoisture1 = -1
+                self.logger.info("soilMoisture1=%d" % soilMoisture1)
+                #time.sleep(0.1)
+                #soilMoisture2 = self.adc.read_adc(2,2/3)
+                #soilMoisture2 = -1
+                try:
+                    soilMoisture2 = counts2moisture_new(5.0*soilParts[1],
+                                                        self.cfg['soilMonitors'][2])
+                except:
+                    self.logger.info("Error parsing %s" % soilParts[1])
+                    soilMoisture2 = -1
+                self.logger.info("soilMoisture2=%d" % soilMoisture2)
+                #time.sleep(0.1)
+                #soilMoisture3 = self.adc.read_adc(3,2/3)
+                #soilMoisture3 = -1
+                try:
+                    soilMoisture3 = counts2moisture_new(5.0*soilParts[2],
+                                                        self.cfg['soilMonitors'][3])
+                except:
+                    self.logger.info("Error parsing %s" % soilParts[2])
+                    soilMoisture3 = -1
+                self.logger.info("soilMoisture3=%d" % soilMoisture3)
+
+                try:
+                    soilMoisture4 = counts2moisture_new(5.0*soilParts[3],
+                                                        self.cfg['soilMonitors'][4])
+                except:
+                    self.logger.info("Error parsing %s" % soilParts[3])
+                    soilMoisture4 = -1
+
+                self.logger.info("soilMoisture4=%d" % soilMoisture4)
+
+                # FIXME - using raw value returned from soilSerial, fiddled to
+                # look like 10 bit ADC counts.
+                #soilMoisture1 = soilParts[0]*1024
+                #soilMoisture2 = soilParts[1]*1024
+                #soilMoisture3 = soilParts[2]*1024
+                #soilMoisture4 = soilParts[3]*1024
             
             data['humidity'] = hum
             data['temp'] = temp

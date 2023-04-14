@@ -95,10 +95,10 @@ class _monitorThread(threading.Thread):
             humSum += rec['humidity']
             lightSum += rec['light']
             temp2Sum += rec['temp2']
-            soilSum += rec['soil']
-            soilSum1 += rec['soil1']
-            soilSum2 += rec['soil2']
-            soilSum3 += rec['soil3']
+            soilSum += rec['soil1']
+            soilSum1 += rec['soil2']
+            soilSum2 += rec['soil3']
+            soilSum3 += rec['soil4']
             count += 1
         tempMean = tempSum / count
         temp2Mean = temp2Sum / count
@@ -177,7 +177,7 @@ class _monitorThread(threading.Thread):
             self.logger.info("soilMoisture=%d" % soilMoisture)
 
             soilParts = self.soilSerial.getStatus()
-            print(soilParts)
+            #print(soilParts)
             if (len(soilParts)<4):
                 print("Error - did not receive 4 values from soilSerial")
                 self.logger.info("Error - did not receive 4 values from soilSerial")

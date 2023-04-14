@@ -52,7 +52,7 @@ class SoilSerial:
         else:
             for pin in self.pins:
                 val = pin.read()
-                print(pin, val)
+                #print(pin, val)
                 statusLst.append(val)
         return(statusLst)
 

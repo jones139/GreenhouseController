@@ -45,3 +45,17 @@ Added more compost up to top of pot so sensors are fully inserted and added wate
 | 4      | 2.22V (506) | 2.11V (476) | 1.04V (232) |  0.88V (197) |
 
 So Dry is 2.20V (498 counts), wet is 0.82V (183 counts).   Use this for initial calibration, and plot measurement vs time and mass of pot as it dries out.
+
+When tidying up the wiring I removed the sensors and decided the compost was not really saturated, so added water to the tray so it can soak it up over night to make sure it is really saturated at the start - so it is possible that the over-night readings may increase rather than decrease as the compost absorbs water.
+
+## Measurements during Dry-Out
+With sensors in initially saturated compost, monitored indicated soil moisture content as the pot of compost dries out.   Each day, the sensors are removed from the pot, and the pot, tray and compost weighed, then the sensors returned.
+
+| Date           | Mass (g) | Sensor 1 | Sensor 2 | Sensor 3 | Sensor 4 | Notes |
+| ---            | ---      | ---      | ---      | ---      | ---      | ---   |
+| Fri 14/04/2023 | 368 g    | 96.0    | 90.2     | 93.7      |  91.4     | Compost saturated      |
+| Sat 15/04/2023 | 351 g    |   95.4  |  91.4    |  96.0     |   92.5    | Compost very wet      |
+| Sun 16/04/2023 | 339 g    |   95.0  |  91.5    |   96.1    |   92.0    | Compost still very wet      |
+| Mon 17/04/2023 | 329 g    |   95.3  |  90.3    |   91.5    |   93.2    | Compost still very wet      |
+| Tue 18/04/2023 | 323 g    |   93.4  |  90.0    | 94.6      |   89.6    | Compost damp.  Pot still feels heavy | 
+

@@ -7,7 +7,7 @@ Enclosure Terminal Block
 | Terminal | Description | Notes |
 | ---      | ---         | ---   |
 | 1         | Power Supply Input | 12V DC |
-| 2         | Power Supply Input | 12V DC |
+| 2         | Power 12V DC Output | 12V DC |
 | 3         | Ground | |
 | 4         | Ground ||
 | 5         | Ground ||

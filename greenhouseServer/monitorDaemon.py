@@ -174,14 +174,42 @@ class _monitorThread(threading.Thread):
             # Raspberry Pi - this is not used.
             # Use lowest gain to keep the sensors on scale as we are using 5V
             # supplies to the sensor and a 3.3V ADC.
-            soilMoisture = counts2moisture_new(self.adc.read_adc(0,2/3),
-                                                self.cfg['soilMonitors'][0])
+            gainVal = 2/3 # allows 0-6.144V to be read
+            gainFsd = 6.144 # V at full scale
+            maxCounts = 32767
+            #soilMoisture = counts2moisture_new(self.adc.read_adc(0,gainVal),
+            #                                    self.cfg['soilMonitors'][0])
+            time.sleep(0.1)
+            soilCounts0 = self.adc.read_adc(0,gainVal)
+            soilMoisture = counts2moisture_new(soilCounts0, self.cfg['soilMonitors'][0])
+            time.sleep(0.1)
+            soilCounts1 = self.adc.read_adc(1,gainVal)
+            time.sleep(0.1)
+            soilCounts2 = self.adc.read_adc(2,gainVal)
+            time.sleep(0.1)
+            soilCounts3 = self.adc.read_adc(3,gainVal)
+            soilVolts0 = soilCounts0*gainFsd/maxCounts
+            soilVolts1 = soilCounts1*gainFsd/maxCounts
+            soilVolts2 = soilCounts2*gainFsd/maxCounts
+            soilVolts3 = soilCounts3*gainFsd/maxCounts
+            self.logger.info("ADC soilVolts = %.2f / %.2f / %.2f / %.2f" % \
+                             (soilVolts0,
+                              soilVolts1,
+                              soilVolts2,
+                              soilVolts3))
             #soilMoisture = -1
             self.logger.info("soilMoisture=%d" % soilMoisture)
 
             # Read all four soil moisture readings from the Arduino
             # connected via USB.
             soilParts = self.soilSerial.getStatus()
+
+            self.logger.info("SER soilVolts = %.2f / %.2f / %.2f / %.2f" % \
+                             (5.0*soilParts[0],
+                              5.0*soilParts[1],
+                              5.0*soilParts[2],
+                              5.0*soilParts[3]))
+
             #print(soilParts)
             if (len(soilParts)<4):
                 print("Error - did not receive 4 values from soilSerial")

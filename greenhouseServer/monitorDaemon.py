@@ -169,6 +169,9 @@ class _monitorThread(threading.Thread):
             hum, temp = sht3x_main.calculation(tData,hData)
             light = self.lightSensor.measure_high_res()
             temp2 = self.readDs18B20(self.temp2Dev)
+
+            # soilMoisture is read from the ADC connected directly to the
+            # Raspberry Pi - this is not used.
             # Use lowest gain to keep the sensors on scale as we are using 5V
             # supplies to the sensor and a 3.3V ADC.
             soilMoisture = counts2moisture_new(self.adc.read_adc(0,2/3),
@@ -176,6 +179,8 @@ class _monitorThread(threading.Thread):
             #soilMoisture = -1
             self.logger.info("soilMoisture=%d" % soilMoisture)
 
+            # Read all four soil moisture readings from the Arduino
+            # connected via USB.
             soilParts = self.soilSerial.getStatus()
             #print(soilParts)
             if (len(soilParts)<4):
@@ -225,12 +230,6 @@ class _monitorThread(threading.Thread):
 
                 self.logger.info("soilMoisture4=%d" % soilMoisture4)
 
-                # FIXME - using raw value returned from soilSerial, fiddled to
-                # look like 10 bit ADC counts.
-                #soilMoisture1 = soilParts[0]*1024
-                #soilMoisture2 = soilParts[1]*1024
-                #soilMoisture3 = soilParts[2]*1024
-                #soilMoisture4 = soilParts[3]*1024
             
             data['humidity'] = hum
             data['temp'] = temp
@@ -244,6 +243,8 @@ class _monitorThread(threading.Thread):
             self.curTime = dt
             self.curData = data
             self.dataBuffer.append(data)
+
+            # Log data to the local database
             if (dt.timestamp() - lastLogTime.timestamp())>=self.logInterval:
                 (meanTemp, meanHumidity, meanLight, meanTemp2,
                  meanSoil,meanSoil1,meanSoil2,meanSoil3) = self.calcMeans(self.dataBuffer)
@@ -272,6 +273,7 @@ class _monitorThread(threading.Thread):
             if (self.DEBUG): print(self.curTime, self.curData)
             self.logger.debug(self.curData)
             #time.sleep(0.01)
+            # Run this loop every second.
             time.sleep(1.0)
         #outFile.close()
         print("monitorThread.run() - Exiting")

@@ -38,3 +38,5 @@ provided connectors.
 
 I had issues with the ADC1115 being unreliable initially so used an Arduino with the Firmata firmware to provide ADC for the sensors.   This did however
 increase the power consumption, so once I became more confident in the ADC1115 I removed the Arduino board from the system.
+
+The dosing control output is GPIO #24

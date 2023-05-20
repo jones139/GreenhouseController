@@ -78,7 +78,7 @@ class _monitorThread(threading.Thread):
         self.adc = Adafruit_ADS1x15.ADS1115()
         #self.soilMoistureLevel = adc.read_adc(0,1)
 
-        self.soilSerial = soilSerial.SoilSerial(self.cfg)
+        #self.soilSerial = soilSerial.SoilSerial(self.cfg)
     
     def calcMeans(self,buf):
         tempSum = 0.
@@ -197,68 +197,18 @@ class _monitorThread(threading.Thread):
                               soilVolts1,
                               soilVolts2,
                               soilVolts3))
-            #soilMoisture = -1
-            self.logger.info("soilMoisture=%d" % soilMoisture)
 
-            # Read all four soil moisture readings from the Arduino
-            # connected via USB.
-            soilParts = self.soilSerial.getStatus()
+            soilMoisture1 = counts2moisture_new(soilVolts0,
+                                                self.cfg['soilMonitors'][0])
+            soilMoisture2 = counts2moisture_new(soilVolts1,
+                                                self.cfg['soilMonitors'][1])
+            soilMoisture3 = counts2moisture_new(soilVolts2,
+                                                self.cfg['soilMonitors'][2])
+            soilMoisture4 = counts2moisture_new(soilVolts3,
+                                                self.cfg['soilMonitors'][3])
 
-            self.logger.info("SER soilVolts = %.2f / %.2f / %.2f / %.2f" % \
-                             (5.0*soilParts[0],
-                              5.0*soilParts[1],
-                              5.0*soilParts[2],
-                              5.0*soilParts[3]))
-
-            #print(soilParts)
-            if (len(soilParts)<4):
-                print("Error - did not receive 4 values from soilSerial")
-                self.logger.info("Error - did not receive 4 values from soilSerial")
-                soilMoisture1 = -1
-                soilMoisture2 = -1
-                soilMoisture3 = -1
-                soilMoisture4 = -1
-            else:
-                #time.sleep(0.1)
-                #soilMoisture1 = self.adc.read_adc(1,2/3)
-                try:
-                    soilMoisture1 = counts2moisture_new(5.0*soilParts[0],
-                                                        self.cfg['soilMonitors'][1])
-                except:
-                    self.logger.info("Error parsing %s" % soilParts[0])
-                    soilMoisture1 = -1
-                self.logger.info("soilMoisture1=%d" % soilMoisture1)
-                #time.sleep(0.1)
-                #soilMoisture2 = self.adc.read_adc(2,2/3)
-                #soilMoisture2 = -1
-                try:
-                    soilMoisture2 = counts2moisture_new(5.0*soilParts[1],
-                                                        self.cfg['soilMonitors'][2])
-                except:
-                    self.logger.info("Error parsing %s" % soilParts[1])
-                    soilMoisture2 = -1
-                self.logger.info("soilMoisture2=%d" % soilMoisture2)
-                #time.sleep(0.1)
-                #soilMoisture3 = self.adc.read_adc(3,2/3)
-                #soilMoisture3 = -1
-                try:
-                    soilMoisture3 = counts2moisture_new(5.0*soilParts[2],
-                                                        self.cfg['soilMonitors'][3])
-                except:
-                    self.logger.info("Error parsing %s" % soilParts[2])
-                    soilMoisture3 = -1
-                self.logger.info("soilMoisture3=%d" % soilMoisture3)
-
-                try:
-                    soilMoisture4 = counts2moisture_new(5.0*soilParts[3],
-                                                        self.cfg['soilMonitors'][4])
-                except:
-                    self.logger.info("Error parsing %s" % soilParts[3])
-                    soilMoisture4 = -1
-
-                self.logger.info("soilMoisture4=%d" % soilMoisture4)
-
-            
+            soilMoisture = (soilMoisture1 + soilMoisture2
+                            + soilMoisture3 + soilMoisture4)/4.0
             data['humidity'] = hum
             data['temp'] = temp
             data['light'] = light

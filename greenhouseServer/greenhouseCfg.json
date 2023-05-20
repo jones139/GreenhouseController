@@ -20,11 +20,10 @@
     "temp2Dev": "28-0000044aca36",
     "soilProbePin": 5,
     "soilMonitors": [
-	{"source":"adc","chan":"0","type":"RES", "dryVal":12000,"wetVal":4000},
-	{"source":"ser","chan":"0","type":"CAP", "dryVal":2.20,"wetVal":0.82},
-	{"source":"ser","chan":"1","type":"CAP", "dryVal":2.20,"wetVal":0.82},
-	{"source":"ser","chan":"2","type":"CAP", "dryVal":2.20,"wetVal":0.82},
-	{"source":"ser","chan":"3","type":"CAP", "dryVal":2.20,"wetVal":0.82}
+	{"source":"ser","chan":"0","type":"CAP", "dryVal":2.21,"wetVal":0.82},
+	{"source":"ser","chan":"1","type":"CAP", "dryVal":2.23,"wetVal":0.82},
+	{"source":"ser","chan":"2","type":"CAP", "dryVal":2.26,"wetVal":0.82},
+	{"source":"ser","chan":"3","type":"CAP", "dryVal":2.23,"wetVal":0.82}
     ],
     "soilSerialDevice": "/dev/ttyUSB0"
 }

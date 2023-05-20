@@ -135,7 +135,7 @@ if (__name__ == "__main__"):
     print("greenhouseSvr.__main__()")
 
     parser = argparse.ArgumentParser(description='Greenhouse Server')
-    parser.add_argument('--config', default="sbscfg.json",
+    parser.add_argument('--config', default="greenhouseCfg.json",
                         help='Configuration file name')
     #parser.add_argument('-n', '--nContours',
     #                    default=10,

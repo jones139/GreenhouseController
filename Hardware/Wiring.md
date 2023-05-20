@@ -29,3 +29,12 @@ Enclosure Terminal Block
 
 
 
+The soil moisture sensors were provided with connectors for the wiring.
+This makes it easy to switch out sensors, but I found that the connectors
+suffered from corrosion in greenhouse conditions so they became unreliable.
+
+So the sensors are soldered to the wiring harness rather than using the
+provided connectors.
+
+I had issues with the ADC1115 being unreliable initially so used an Arduino with the Firmata firmware to provide ADC for the sensors.   This did however
+increase the power consumption, so once I became more confident in the ADC1115 I removed the Arduino board from the system.

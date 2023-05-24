@@ -30,6 +30,7 @@ class SoilSerial:
             for pinNo in range(0,4):
                 pin = board.analog[pinNo]
                 pin.enable_reporting()
+                time.sleep(0.1)
                 print(pin, pin.read())
                 self.pins.append(pin)
                 
@@ -77,5 +78,12 @@ if __name__=="__main__":
 
     soil = SoilSerial(cfgObj, debug=True)
     print(soil.getStatus())
+    time.sleep(0.5)
+    print(soil.getStatus())
+    time.sleep(0.5)
+    print(soil.getStatus())
+    time.sleep(0.5)
+    print(soil.getStatus())
+    time.sleep(0.5)
 
 

@@ -66,6 +66,7 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
     
     
 def plotTempRhGraph(df, titleStr, outFname):
+    print(df.columns)
     fig, ax = plt.subplots()
     df.plot(ax=ax, y='temp2')# greenhouse
     df.plot(ax=ax, y='temp3')# external ambient

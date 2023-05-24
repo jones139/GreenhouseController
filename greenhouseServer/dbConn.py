@@ -26,7 +26,7 @@ class DbConn:
         
     def getMonitorData(self, sdate, edate, retDf=False):
         #print(sdate,type(sdate), edate, type(edate))
-        queryStr = """select data_date, temp1, temp2, rh, light, soil,soil1,soil2,soil3 from environment where data_date >= ? and data_date <= ?;"""
+        queryStr = """select data_date, temp1, temp2, temp3, rh, light, soil,soil1,soil2,soil3 from environment where data_date >= ? and data_date <= ?;"""
         paramsTuple = (sdate, edate)
         if retDf:
             df = pd.read_sql (queryStr,

@@ -61,6 +61,7 @@ class _monitorThread(threading.Thread):
         print("_monitorThread._init__: outFname=%s, log interval=%d s" % (self.outFname, self.logInterval))
         self.dbPath = os.path.join(cfg['dataFolder'],cfg['dbFname'])
         self.temp2Dev = cfg['temp2Dev']
+        self.temp3Dev = cfg['temp3Dev']
         self.curData = {}
         self.curTime = datetime.datetime.now()
         #self.soilProbePin = cfg['soilProbePin']
@@ -83,6 +84,7 @@ class _monitorThread(threading.Thread):
     def calcMeans(self,buf):
         tempSum = 0.
         temp2Sum = 0.
+        temp3Sum = 0.
         humSum = 0.
         lightSum = 0.
         soilSum = 0.
@@ -95,6 +97,7 @@ class _monitorThread(threading.Thread):
             humSum += rec['humidity']
             lightSum += rec['light']
             temp2Sum += rec['temp2']
+            temp3Sum += rec['temp3']
             soilSum += rec['soil1']
             soilSum1 += rec['soil2']
             soilSum2 += rec['soil3']
@@ -102,13 +105,14 @@ class _monitorThread(threading.Thread):
             count += 1
         tempMean = tempSum / count
         temp2Mean = temp2Sum / count
+        temp3Mean = temp2Sum / count
         humMean = humSum / count
         lightMean = lightSum / count
         soilMean = soilSum / count
         soil1Mean = soilSum1 / count
         soil2Mean = soilSum2 / count
         soil3Mean = soilSum3 / count
-        return(tempMean, humMean, lightMean, temp2Mean,
+        return(tempMean, humMean, lightMean, temp2Mean, temp3Mean,
                soilMean,
                soil1Mean,
                soil2Mean,
@@ -157,6 +161,7 @@ class _monitorThread(threading.Thread):
         data['meanHumidity'] = -999
         data['meanLight'] = -999
         data['meanTemp2'] = -999
+        data['meanTemp3'] = -999
         data['meanSoil'] = -999
         data['meanSoil1'] = -999
         data['meanSoil2'] = -999
@@ -169,6 +174,7 @@ class _monitorThread(threading.Thread):
             hum, temp = sht3x_main.calculation(tData,hData)
             light = self.lightSensor.measure_high_res()
             temp2 = self.readDs18B20(self.temp2Dev)
+            temp3 = self.readDs18B20(self.temp3Dev)
 
             # soilMoisture is read from the ADC connected directly to the
             # Raspberry Pi - this is not used.
@@ -213,6 +219,7 @@ class _monitorThread(threading.Thread):
             data['temp'] = temp
             data['light'] = light
             data['temp2'] = temp2
+            data['temp3'] = temp3
             data['soil'] = soilMoisture
             data['soil1'] = soilMoisture1
             data['soil2'] = soilMoisture2
@@ -224,12 +231,13 @@ class _monitorThread(threading.Thread):
 
             # Log data to the local database
             if (dt.timestamp() - lastLogTime.timestamp())>=self.logInterval:
-                (meanTemp, meanHumidity, meanLight, meanTemp2,
+                (meanTemp, meanHumidity, meanLight, meanTemp2, meanTemp3,
                  meanSoil,meanSoil1,meanSoil2,meanSoil3) = self.calcMeans(self.dataBuffer)
                 data['meanTemp'] = meanTemp
                 data['meanHumidity'] = meanHumidity
                 data['meanLight'] = meanLight
                 data['meanTemp2'] = meanTemp2
+                data['meanTemp3'] = meanTemp3
                 data['meanSoil'] = meanSoil
                 data['meanSoil1'] = meanSoil1
                 data['meanSoil2'] = meanSoil2
@@ -237,7 +245,7 @@ class _monitorThread(threading.Thread):
                 print("Logging Data....")
                 # write to database
                 self.db.writeMonitorData(self.curTime,
-                                         meanTemp, meanTemp2,
+                                         meanTemp, meanTemp2, meanTemp3,
                                          meanHumidity,
                                          meanLight,
                                          meanSoil,

@@ -155,8 +155,9 @@ function populate_form(statusStr) {
     // Environment
     if (typeof statusObj.monitorData.data != "undefined") {
 	//$("#tempTxt").html(statusObj.monitorData.data.temp.toFixed(1) +" degC");
-	if (typeof statusObj.monitorData.data.temp2 != "undefined") 
-	    $("#temp2Txt").html(statusObj.monitorData.data.temp2.toFixed(1) +" degC");
+	if (typeof statusObj.monitorData.data.temp2 != "undefined")
+	    var tmpTxt = "Ambient: "+statusObj.monitorData.data.temp3.toFixed(1) +" degC<br/>Greenhouse: "+statusObj.monitorData.data.temp2.toFixed(1) +" degC<br/>Enclosure: "+statusObj.monitorData.data.temp.toFixed(1) +" degC";
+	    $("#temp2Txt").html(tmpTxt);
 	if (typeof statusObj.monitorData.data.humidity != "undefined") 
 	    $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
 	if (typeof statusObj.monitorData.data.light != "undefined") 
@@ -168,15 +169,17 @@ function populate_form(statusStr) {
 	    soilm3 = statusObj.monitorData.data.soil3;
 	    soilm4 = statusObj.monitorData.data.soil4;
 	    soilmAvg = (soilm + soilm1 + soilm2 + soilm3) / 4.0;
+	    soilVals = [soilm1, soilm2, soilm3, soilm4];
+	    soilVals = soilVals.sort();
+	    soilmMedian = (soilVals[1]+soilVals[2])/2.0;
 	    $("#soilTxt").html(
-		statusObj.monitorData.data.soil.toFixed(0) +" counts (" +
-			       soilm.toFixed(1) + " %)"
+		soilmAvg.toFixed(1) + " % (Median=" + soilmMedian.toFixed(1)+" %)"
 			       +"<br/>("
-				+soilm.toFixed(0) + ","
-			       +soilm1.toFixed(0) + ","
-			       +soilm2.toFixed(0) + ","
-			       +soilm3.toFixed(0) + ","
-			       +soilm4.toFixed(0) + ")"
+				//+soilm.toFixed(0) + ":"
+			       +soilm1.toFixed(1) + ", "
+			       +soilm2.toFixed(1) + ", "
+			       +soilm3.toFixed(1) + ", "
+			       +soilm4.toFixed(1) + ")"
 			       );
 	}
     }

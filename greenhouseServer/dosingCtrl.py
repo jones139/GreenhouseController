@@ -59,6 +59,7 @@ class _dosingCtrlThread(threading.Thread):
 
     def stop(self):
         """ Stop the background thread"""
+        self.waterOff()
         self.logger.info("Stopping thread")
         self.runThread = False
 
@@ -107,11 +108,13 @@ class DosingCtrlDaemon():
 
 
     def start(self):
-        ''' Start the background process
+        ''' Start the background process and make sure that dosing is off.
         '''
         print("DosingCtrlDaemon.start()")
         self.logger.info("DosingCtrlDaemon.start()")
         self.dosingCtrlThread.start()
+        self.dosingCtrlThread.waterOff()
+        self.dosingCtrlThread.onSecs = 0.0
 
     def stop(self):
         ''' Stop the background process
@@ -144,12 +147,16 @@ if __name__ == '__main__':
 
     dosingCtrl = DosingCtrlDaemon(cfgObj, debug=True)
     dosingCtrl.start()
-    print("waiting 2 secs..")
-    time.sleep(2)
-    dosingCtrl.setOnSecs(2)
-    print("waiting 20 secs..")
-    time.sleep(20)
+    #print("waiting 1 secs..")
+    #time.sleep(1)
+    print("dosing for 100 secs")
+    dosingCtrl.setOnSecs(100)
+    print("waiting 110 secs..")
+    time.sleep(110)
+    #dosingCtrl.setOnSecs(2)
+    #print("waiting 3 secs..")
+    #time.sleep(3)
     dosingCtrl.stop()
-    print("waiting 2 secs..")
-    time.sleep(2)
+    #print("waiting 2 secs..")
+    #time.sleep(2)
     print("exiting")

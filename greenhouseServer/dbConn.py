@@ -14,11 +14,10 @@ class DbConn:
                          soil, soil1, soil2, soil3):
         # Note - triple quote for multi line string
         cur = self.db.cursor()
-        # FIXME - add column for temp3
         cur.execute("""insert into 'environment'
-        ('data_date', 'temp1', 'temp2', 'rh', 'light', 'soil','soil1','soil2','soil3')
-        values (?, ?, ?, ?, ?, ?,?,?,?);""",
-                        (data_date, temp1, temp2,
+        ('data_date', 'temp1', 'temp2', 'temp3', 'rh', 'light', 'soil','soil1','soil2','soil3')
+        values (?, ?, ?, ?, ?, ?, ?,?,?,?);""",
+                        (data_date, temp1, temp2, temp3,
                          rh, light,
                          soil,soil1,soil2,soil3))
 
@@ -41,7 +40,7 @@ class DbConn:
             return cur.fetchall()
 
     def getLatestMonitorData(self):
-        queryStr = """select data_date, temp1, temp2, rh, light, soil,soil1,soil2,soil3 from environment order by rowid desc limit 1;"""
+        queryStr = """select data_date, temp1, temp2, temp3, rh, light, soil,soil1,soil2,soil3 from environment order by rowid desc limit 1;"""
         cur = self.db.cursor()
         cur.execute(queryStr)
         return cur.fetchone()

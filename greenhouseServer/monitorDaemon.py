@@ -105,7 +105,7 @@ class _monitorThread(threading.Thread):
             count += 1
         tempMean = tempSum / count
         temp2Mean = temp2Sum / count
-        temp3Mean = temp2Sum / count
+        temp3Mean = temp3Sum / count
         humMean = humSum / count
         lightMean = lightSum / count
         soilMean = soilSum / count

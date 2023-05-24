@@ -67,7 +67,8 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
     
 def plotTempRhGraph(df, titleStr, outFname):
     fig, ax = plt.subplots()
-    df.plot(ax=ax, y='temp2')#, x='data_date')
+    df.plot(ax=ax, y='temp2')# greenhouse
+    df.plot(ax=ax, y='temp3')# external ambient
     df.plot(ax=ax, y='rh')#, x='data_date')
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)

@@ -24,7 +24,10 @@ be used for a feed-forward component to anticipate high water demand rather than
   * Generic soil resistance probe with associated module to give analogue outut.
   * 12V solenoid valve to control water
 
-
+# Irrigation System
+The irrigation system uses dripper heads conneced to small diameter (~8mm diameter) plastic hose.
+Calibration tests in 2022 showed that  the system dispenses 0.074 l/min per head.
+Each grow bag has two dripper heads so we dispense 0.148 l/min per grow bag.   Each grow bag needs around 2 l/day, so we need to water for about 17 sec per 30 minute cycle to give a totla of 2 l/day.
 
 
 # Credits

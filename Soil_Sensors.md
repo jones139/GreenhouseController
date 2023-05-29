@@ -104,3 +104,13 @@ So, the fact that the indication dips during periods of darkness and returns to 
 Could the sensors be building up a film of bacteria etc that is increasing the indication?   It is a pitty we cleaned all of the installed sensors otherwise we could have tried powering the system down for a period to ensure everything is discharged then re-starting to see if it is a sensor issue or something attached to the sensor.   See if we still see the night-time dip after cleaning....
 
 
+28 May 2023
+Control pot remained stable overnight while the growbag moisture indications stepped down then back up.
+
+29 May 2023
+Planted a tomato plant in the control pot and watered it.
+Growbags had been on timed watering at 10s per 30 min cycle, but they were drying out so watered manually and
+increaed watering time.
+Re-connected input 1 to sensor 1 rather than the power supply now we are confident that we do not have a power
+supply issue causing the odd radings.
+In suspense to see if adding the tomato plant to the control pot changes the overnight behaviour of the readings or not.

@@ -15,16 +15,6 @@ import dbConn
 import monitorDaemon
 
 class _waterCtrlThread(threading.Thread):
-    #runDaemon = False
-    #DEBUG = False
-    #curTime = None
-    #cycleStartTime = None
-    #waterStartTime = None
-    #soilCond = None
-    #soilRes = None
-    #setPoint = None
-    #controlVal = None
-    #waterStatus=0
     def __init__(self, cfg, debug = False):
         print("_waterCtrlThread.__init__()")
         self.cfg = cfg
@@ -74,6 +64,9 @@ class _waterCtrlThread(threading.Thread):
         self.runThread = True
         self.curTime = datetime.datetime.now()
         self.waterStatus = 0
+        self.soilCond = -1
+        self.soilRes = -1
+        self.controlVal = -1
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.waterControlPin], GPIO.OUT)
@@ -96,20 +89,20 @@ class _waterCtrlThread(threading.Thread):
             # Start cycle
             self.cycleStartTime = datetime.datetime.now()
             self.db = dbConn.DbConn(self.dbPath)
-            envData = self.db.getLatestMonitorData()
+            data_date, temp1, temp2, temp3, rh, light, soil, soil1, soil2, soil3 = self.db.getLatestMonitorData()
             self.db.close()
-            self.soilRes = (envData[5]+envData[6]+envData[7]+envData[8])/4.0
-            self.soilRes = (envData[5])/1.0
-            #self.soilCond = 1.0e6 * 1.0/self.soilRes  # micro-condy units
-            #self.soilCond = monitorDaemon.counts2moisture(self.soilRes,"RES")
-            self.soilCond = self.soilRes  # We now store moisture in % moisture units so no need to convert.
+            condVals = [soil, soil1, soil2, soil3]
+            coldVals = condVals.sort()
+            condMedian = (condVals[1]+condVals[2])/2.0
+            self.soilCond = condMedian
             self.controlVal = self.pid(self.soilCond)
+            self.logger.debug("self.soilCond=%.1f" % self.soilCond)
 
             # Set the cycle watering on time based on the operating mode
             if (self.opMode=="moist"):
                 self.onSecs = self.controlVal
-                self.logger.info("Cycle_Start: soilRes=%d, soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
-                  (self.soilRes, self.soilCond, self.setPoint, self.controlVal))
+                self.logger.info("Cycle_Start: soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
+                  (self.soilCond, self.setPoint, self.controlVal))
             elif (self.opMode=="time"):
                 self.logger.info("Cycle_Start: onSecs="+str(self.onSecs))
             elif (self.opMode=="off"):

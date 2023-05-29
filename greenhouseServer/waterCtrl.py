@@ -15,16 +15,16 @@ import dbConn
 import monitorDaemon
 
 class _waterCtrlThread(threading.Thread):
-    runDaemon = False
-    DEBUG = False
-    curTime = None
-    cycleStartTime = None
-    waterStartTime = None
-    soilCond = None
-    soilRes = None
-    setPoint = None
-    controlVal = None
-    waterStatus=0
+    #runDaemon = False
+    #DEBUG = False
+    #curTime = None
+    #cycleStartTime = None
+    #waterStartTime = None
+    #soilCond = None
+    #soilRes = None
+    #setPoint = None
+    #controlVal = None
+    #waterStatus=0
     def __init__(self, cfg, debug = False):
         print("_waterCtrlThread.__init__()")
         self.cfg = cfg
@@ -73,6 +73,7 @@ class _waterCtrlThread(threading.Thread):
         self.DEBUG = debug
         self.runThread = True
         self.curTime = datetime.datetime.now()
+        self.waterStatus = 0
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.waterControlPin], GPIO.OUT)
@@ -223,9 +224,10 @@ class WaterCtrlDaemon():
 
     def setOnSecs(self, onSecs):
         print("waterCtrlDaemon.setOnSecs(%f)" % onSecs)
-        self.logger.info("WaterCtrlDaemon.stop(%f)" % onSecs)
+        self.logger.info("WaterCtrlDaemon.setOnSecs(%f)" % onSecs)
         if (self.waterCtrlThread.cycleSecs >= onSecs):
             self.waterCtrlThread.onSecs = onSecs
+            self.waterCtrlThread.writeWaterData()
             return("OK")
         else:
             print("waterCtrlDaemon.setOnSecs - ERROR - onSecs must not be more than cycleSecs")

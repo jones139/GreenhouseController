@@ -35,6 +35,7 @@ showSettingsDialog = function() {
     $("#KpInput").val(statusObj.waterCtrl.Kp);
     $("#KiInput").val(statusObj.waterCtrl.Ki);
     $("#KdInput").val(statusObj.waterCtrl.Kd);
+    $("#lightThreshInput").val(statusObj.waterCtrl.lightThresh);
     
     $("#dlgOverlay").show();
     $("#settingsDlg").show();
@@ -92,6 +93,13 @@ changeKi = function() {
 changeKd = function() {
     newKd = $("#KdInput").val();
     url = "/Kd/"+newKd;
+    console.log(url);
+    send_url(url);
+};
+
+changeLightThresh = function() {
+    newLightThresh = $("#lightThreshInput").val();
+    url = "/lightThresh/"+newLightThresh;
     console.log(url);
     send_url(url);
 };
@@ -161,7 +169,7 @@ function populate_form(statusStr) {
 	if (typeof statusObj.monitorData.data.humidity != "undefined") 
 	    $("#humidityTxt").html(statusObj.monitorData.data.humidity.toFixed(1) +" %");
 	if (typeof statusObj.monitorData.data.light != "undefined") 
-	    $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux");
+	    $("#lightTxt").html(statusObj.monitorData.data.light.toFixed(1) +" lux<br/>(threshold="+statusObj.waterCtrl.lightThresh.toFixed(1)+")");
 	if (typeof statusObj.monitorData.data.soil != "undefined") {
 	    soilm = statusObj.monitorData.data.soil;
 	    soilm1 = statusObj.monitorData.data.soil1;
@@ -225,6 +233,7 @@ $(document).ready(function(){
     $("#changeKpBtn").click(changeKp);
     $("#changeKiBtn").click(changeKi);
     $("#changeKdBtn").click(changeKd);
+    $("#changeLightThreshBtn").click(changeLightThresh);
 
     configObj = null;
     getConfig();

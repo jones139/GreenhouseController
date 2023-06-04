@@ -75,6 +75,8 @@ class GreenhouseCtrl:
         return self.waterCtrl.setKi(Ki)
     def setKd(self, Kd):
         return self.waterCtrl.setKd(Kd)
+    def setLightThresh(self, lightThresh):
+        return self.waterCtrl.setLightThresh(lightThresh)
     
         
 if __name__ == "__main__":

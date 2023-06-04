@@ -96,6 +96,8 @@ class GreenhouseSvr(WebControlClass.WebControlClass):
             retVal=self.mCtrl.setKi(float(valStr))
         if (cmdStr=="Kd"):
             retVal=self.mCtrl.setKd(float(valStr))
+        if (cmdStr=="lightThresh"):
+            retVal=self.mCtrl.setLightThresh(float(valStr))
         #self.logger.info("SbsSvr.onWwwCmd(%s/%s %s): returning %s" % (cmdStr,valStr,methodStr,retVal))
         return(retVal)
 

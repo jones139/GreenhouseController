@@ -9,6 +9,12 @@ Currently does nothing clever - just repeatedly polls one device, assuming
 it is an DS18B20 temperature probe, and prints
 out the temperature.
 
+The calibration of two DS18B20 sensors has been checked against a calibrated
+resistance thermometer (+/-0.2 degC accuracy).   The difference between
+the measured temperature of the DS18B20 and the reference thermometer was
+0.2 degC or better at about 15 degC, so the accuracy of the DS18B20 thermometers appears to
+be very good.
+
 TODO
 ====
   * make this run as a daemon process on start up and continuously write

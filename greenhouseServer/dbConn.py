@@ -46,14 +46,14 @@ class DbConn:
         return cur.fetchone()
 
         
-    def writeWaterData(self,data_date,waterStatus, onTime, cycleTime, controlVal,setpoint,Kp,Ki,Kd,opMode):
+    def writeWaterData(self,data_date,waterStatus, onTime, cycleTime, controlVal,setpoint,Kp,Ki,Kd,opMode, lightThresh):
         # Note - triple quote for multi line string
         cur = self.db.cursor()
         cur.execute("""insert into 'water'
-        ('data_date', 'waterStatus', 'onTime', 'cycleTime','controlVal','setpoint','Kp','Ki','Kd','opMode')
-        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+        ('data_date', 'waterStatus', 'onTime', 'cycleTime','controlVal','setpoint','Kp','Ki','Kd','opMode', 'lightThresh')
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
                         (data_date, waterStatus, onTime, cycleTime, controlVal,
-                         setpoint, Kp, Ki, Kd, opMode))
+                         setpoint, Kp, Ki, Kd, opMode, lightThresh))
 
         self.db.commit()
 
@@ -74,9 +74,9 @@ class DbConn:
             return cur.fetchall()
 
     def getWaterControlVals(self):
-        ''' returns tuple (setpoint, Kp, Ki, Kd, cycleTime, controlVal) which is the current control parameters.
+        ''' returns tuple (setpoint, Kp, Ki, Kd, cycleTime, controlVal, onTime, opMode, lightThresh) which is the current control parameters.
 '''
-        queryStr = """select setpoint, Kp, Ki, Kd, cycleTime, controlVal, onTime, opMode from water order by rowid desc limit 1;"""
+        queryStr = """select setpoint, Kp, Ki, Kd, cycleTime, controlVal, onTime, opMode, lightThresh from water order by rowid desc limit 1;"""
         cur = self.db.cursor()
         cur.execute(queryStr)
         return cur.fetchone()

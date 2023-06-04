@@ -25,7 +25,7 @@ class _waterCtrlThread(threading.Thread):
 
         # Initialise settings from database, or config file if DB values not set
         self.db = dbConn.DbConn(self.dbPath)
-        dbSetpoint, dbKp, dbKi, dbKd, dbCycleSecs, dbControlVal, dbOnSecs, dbOpMode = self.db.getWaterControlVals()
+        dbSetpoint, dbKp, dbKi, dbKd, dbCycleSecs, dbControlVal, dbOnSecs, dbOpMode, dbLightThresh = self.db.getWaterControlVals()
         self.db.close()
         if (dbOpMode is None):
             self.opMode = cfg['opMode']
@@ -55,10 +55,14 @@ class _waterCtrlThread(threading.Thread):
             self.Kd = cfg['Kd']
         else:
             self.Kd = dbKd
+        if (dbLightThresh is None):
+            self.lightThresh = cfg['lightThresh']
+        else:
+            self.lightThresh = dbLightThresh
         self.timeOnLimit = cfg['timeOnLimit']
             
         self.logger.info("_waterCtrlThread.__init__(): cycleSecs=%f, setpoint=%f" % (self.cycleSecs, self.setPoint))
-        self.logger.info("_waterCtrlThread.__init__(): opMode=%s, (Kp,Ki,Kd)=(%f,%f,%f)" % (self.opMode, self.Kp, self.Ki, self.Kd))
+        self.logger.info("_waterCtrlThread.__init__(): opMode=%s, (Kp,Ki,Kd)=(%f,%f,%f), lightThresh=%f" % (self.opMode, self.Kp, self.Ki, self.Kd, self.lightThresh))
 
         self.DEBUG = debug
         self.runThread = True
@@ -95,28 +99,34 @@ class _waterCtrlThread(threading.Thread):
             coldVals = condVals.sort()
             condMedian = (condVals[1]+condVals[2])/2.0
             self.soilCond = condMedian
-            self.controlVal = self.pid(self.soilCond)
-            self.logger.debug("self.soilCond=%.1f" % self.soilCond)
 
-            # Set the cycle watering on time based on the operating mode
-            if (self.opMode=="moist"):
-                self.onSecs = self.controlVal
-                self.logger.info("Cycle_Start: soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
-                  (self.soilCond, self.setPoint, self.controlVal))
-            elif (self.opMode=="time"):
-                self.logger.info("Cycle_Start: onSecs="+str(self.onSecs))
-            elif (self.opMode=="off"):
-                self.onSecs = 0
-            else:
-                self.logger.error("Unrecognised operating mode '%s'"
-                                  % self.opMode)
-                self.onSecs = 0
+            if (light>self.lightThresh):
+                self.controlVal = self.pid(self.soilCond)
+                self.logger.debug("self.soilCond=%.1f, soilVals=(%.1f,%.1f,%.1f,%.1f)" % (self.soilCond, soil, soil1, soil2, soil3))
+                # Set the cycle watering on time based on the operating mode
+                if (self.opMode=="moist"):
+                    self.onSecs = self.controlVal
+                    self.logger.info("Cycle_Start: soilCond=%.1f, setPoint=%.1f, controlVal=%.1f" %
+                      (self.soilCond, self.setPoint, self.controlVal))
+                elif (self.opMode=="time"):
+                    self.logger.info("Cycle_Start: onSecs="+str(self.onSecs))
+                elif (self.opMode=="off"):
+                    self.onSecs = 0
+                else:
+                    self.logger.error("Unrecognised operating mode '%s'"
+                                      % self.opMode)
+                    self.onSecs = 0
 
-            # Apply some water
-            if (self.onSecs>0):
-                self.waterForTime(self.onSecs)
+                # Apply some water
+                if (self.onSecs>0):
+                    self.waterForTime(self.onSecs)
+                else:
+                    self.logger.info("onSecs <= 0 secs - not watering")
+                    self.writeWaterData()
             else:
-                self.logger.info("onSecs <= 0 secs - not watering")
+                self.logger.info("Low light level so not applying water")
+                self.onSecs = 0
+                self.controlVal = 0
                 self.writeWaterData()
 
             # Wait for end of cycle
@@ -145,7 +155,8 @@ class _waterCtrlThread(threading.Thread):
                                self.Kp,
                                self.Ki,
                                self.Kd,
-                               self.opMode);
+                               self.opMode,
+                               self.lightThresh);
         self.db.close()
 
     def waterForTime(self, onSecs):
@@ -263,6 +274,12 @@ class WaterCtrlDaemon():
         self.waterCtrlThread.pid.Kd=Kd
         self.waterCtrlThread.writeWaterData()
 
+    def setLightThresh(self,lightThresh):
+        self.logger.info("lightThresh==%f" % (lightThresh))
+        self.waterCtrlThread.lightThresh = lightThresh
+        self.waterCtrlThread.writeWaterData()
+
+        
     def getStatus(self):
         statusObj = {}
         statusObj['opMode'] = self.waterCtrlThread.opMode
@@ -279,6 +296,7 @@ class WaterCtrlDaemon():
         statusObj['Cp']=self.waterCtrlThread.pid.components[0]
         statusObj['Ci']=self.waterCtrlThread.pid.components[1]
         statusObj['Cd']=self.waterCtrlThread.pid.components[2]
+        statusObj['lightThresh']=self.waterCtrlThread.lightThresh
         return statusObj
         
 if __name__ == '__main__':

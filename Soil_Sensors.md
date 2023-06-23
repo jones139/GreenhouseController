@@ -114,3 +114,48 @@ increaed watering time.
 Re-connected input 1 to sensor 1 rather than the power supply now we are confident that we do not have a power
 supply issue causing the odd radings.
 In suspense to see if adding the tomato plant to the control pot changes the overnight behaviour of the readings or not.
+
+Initial readings suggested that the separate tomato plant pot behaved in a similar manner, but it stopped.  The plant is not looking well, which might account for it.
+
+Returned all four sensors to service in the grow bag and ran the system on moisture control, cleaning the sensors weekly.  This resulted in step changes in the readings, so we adjusted the set point based on Sandie's calibrated finger test.
+
+
+
+~19 June 2023, Sensor 3 failed, reading low.   
+
+21 June 2023, Inspected Sensor 3.  Hole in glue on back of board noted, which could allow water to short between output and +vcc, which could give the low reading effect.    Exchanged for new sensor with varnished edges and varnished connector on the back.
+Working ok after that.
+
+22 June 2023, just after manual watering of plants, Sensors 2 and 4 failed low.  System put into time rather than moisture control.
+
+23 June 2023
+Removed all sensors and dried them.
+Sensors 1, 3 and 4 reading sensible zero.
+Sensor 2 reading -108% - measured output 3.9V
+
+In water: 	1 -> 98%
+		2 -> -109%
+		3 -> 93% (0.87 V)
+		4 -> 8% (2.0 to 2.6V, eratic)
+
+So sensors 2 and 4 are faulty.
+
+Sensor 2 showing corrosion at connector.   Powered down to clean it.  Now indicaes 0% when dry, 99% in water, so corrosion products/debris giving conduction path between +vcc and output.   Dried and varnished both connector and edges of board.
+
+No obvous fault on sensor 4, other than the output pin is not fully encapsulated in glue on the back - could it have got damp and conducted to +vcc under the glue maybe.   Re-checked and it appears to be working correctly, which implies it was a moisture ingress issue and drying it out has cured it.   Dried it and varnished more thoroughly.
+
+Also improved varnishing of the other (working) sensors.
+
+
+Calibration Check after varnishing
+
+		Dry		In Water
+Sensor 1	2.196		0.811
+Sensor 2	2.209		0.788
+Sensor 3	2.224		0.860
+Sensor 4	2.219		0.840
+
+
+All sensors now read in 90-95% range.
+
+Manual watering before going away resulted in Sensor 1 readign -110% (and sensor 4 briefly fell to 75% before recovering - suggests connections wetted with fertilser dosed water?   Inspecting it appears to show soil splashed into connector.  Dried out and reading correct zero level.   Replaced without inserting quite so far - indicating about 85% and gradually increasing as soilmoves around it?  Settled at 101% - will have to see if it is responding to moisture changes correclty or not.

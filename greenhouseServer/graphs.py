@@ -68,13 +68,14 @@ def plotGraphs(dbPath, dataFolder, timeSpanDays, averageStr='H'):
 def plotTempRhGraph(df, titleStr, outFname):
     print(df.columns)
     fig, ax = plt.subplots()
-    df.plot(ax=ax, y='temp2')# greenhouse
-    df.plot(ax=ax, y='temp3')# external ambient
-    df.plot(ax=ax, y='rh')#, x='data_date')
+    df.plot(ax=ax, y='temp3', label='External')# external ambient
+    df.plot(ax=ax, y='temp2', label='Greenhouse')# greenhouse
+    df.plot(ax=ax, y='temp1', label='Enclosure')# enclosure
+    #df.plot(ax=ax, y='rh')#, x='data_date')
     dateFormat = matplotlib.dates.DateFormatter("%H:%M")
     ax.xaxis.set_major_formatter(dateFormat)
     ax.set_ylabel("Temp (degC) / RH (%)")
-    ax.set_ylim((0,100))
+    ax.set_ylim((0,60))
     ax.set_xlabel("Time (hh:mm)")
     ax.grid(True)
     ax.set_title(titleStr)

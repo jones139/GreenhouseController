@@ -176,14 +176,19 @@ function populate_form(statusStr) {
 	    soilm2 = statusObj.monitorData.data.soil2;
 	    soilm3 = statusObj.monitorData.data.soil3;
 	    soilm4 = statusObj.monitorData.data.soil4;
-	    soilmAvg = (soilm + soilm1 + soilm2 + soilm3) / 4.0;
+	    soilmAvg = (soilm1 + soilm2 + soilm3 + soilm4) / 4.0;
 	    soilVals = [soilm1, soilm2, soilm3, soilm4];
-	    soilVals = soilVals.sort();
+	    // This wierdness is because sort does a text sort unless you
+	    // provide a function go compare two values.
+	    soilVals = soilVals.sort(function(a, b){return a - b});
+	    //console.log(soilVals);
+	    //console.log(soilVals[0], soilVals[1], soilVals[2], soilVals[3])
 	    soilmMedian = (soilVals[1]+soilVals[2])/2.0;
+	    //console.log(soilVals[1], soilVals[2], soilmMedian);
 	    $("#soilTxt").html(
 		soilmAvg.toFixed(1) + " % (Median=" + soilmMedian.toFixed(1)+" %)"
 			       +"<br/>("
-				//+soilm.toFixed(0) + ":"
+			       +//soilm.toFixed(1) + ":"
 			       +soilm1.toFixed(1) + ", "
 			       +soilm2.toFixed(1) + ", "
 			       +soilm3.toFixed(1) + ", "

@@ -26,7 +26,7 @@
 // Define which GPIO pins are connected to the sensors.
 // NOTE GPIO Pin numbers are not the same as the Board D0, D1 etc. pin numbers.
 //     See: https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/05/ESP8266-WeMos-D1-Mini-pinout-gpio-pin.png?quality=100&strip=all&ssl=1
-#define DHTPIN 4     // Digital pin connected to the DHT sensor - GPIO 4 is D1 on Wemos D1 Mini Board
+#define DHTPIN 4     // Digital pin connected to the DHT sensor - GPIO 4 is D2 on Wemos D1 Mini Board
 #define ONEWIREPIN 5 // GPIO Pin of OneWire Bus - GPIO5 is D1 on Wemos D1 Mini board
 
 // Uncomment the type of sensor in use:

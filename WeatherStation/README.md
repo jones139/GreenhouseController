@@ -9,6 +9,10 @@ Weather Station
 
 These are powered using a 5V power supply conneced directly to the 5V pin of the Wemos D1 mini board (we do not use the micro-usb connector for power because it does not fit through the hole in the thermometer screen).
 
+![Circuit Board](images/Circuit_Board.jpg)
+
+![Screen](images/Screen.jpg)
+
 ## Software
 
   - Copy credentials.h.template to credentials.h, and update to match your configuration.
